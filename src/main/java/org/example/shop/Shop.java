@@ -3,67 +3,38 @@ package org.example.shop;
 import org.example.product.Categories;
 import org.example.product.Product;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Shop {
-    private List<Product> productList;
+    private Map<Long,Product> productMap;
 
     public Shop() {
         int sizeShop = 50;
-        productList = new ArrayList<>(sizeShop);
+        productMap = new HashMap<>(sizeShop);
     }
 
     public void addProduct (Product product){
-        productList.add(product);
-    }
-
-    public List<Product> getProductList() {
-        return productList;
+        productMap.put(product.getId(), product);
     }
 
     public void changeProduct(int id, String name, int quantity, int price, Categories categories){
-        productList.get(id).setName(name);
-        productList.get(id).setQuantity(quantity);
-        productList.get(id).setPrice(price);
-        productList.get(id).setCategories(categories);
+        productMap.get(id).setName(name);
+        productMap.get(id).setQuantity(quantity);
+        productMap.get(id).setPrice(price);
+        productMap.get(id).setCategories(categories);
 
-    }
-
-    public Product searchProduct (long id){
-        for (Product product : productList) {
-            if (product.getId() == id) {
-                return product;
-            }
-        }
-        return null;
-    }
-
-    public Product searchProduct (String name){
-        for (Product product : productList) {
-            if (product.getName().equals(name)) {
-                return product;
-            }
-        }
-        return null;
-    }
-
-    public Product searchProduct (int price){
-        for (Product product : productList) {
-            if (product.getPrice() == price) {
-                return product;
-            }
-        }
-        return null;
     }
 
     public void deleteProduct (long id){
-        for (Product product : productList) {
-            if (product.getId() == id) {
-
-            }
-        }
+        productMap.remove(id);
     }
 
+    public String showProduct (long id){
+        return productMap.get(id).toString();
+    }
 
+    public String searchProduct (String name){
+        return null;
+    }
 }

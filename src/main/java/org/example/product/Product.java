@@ -49,6 +49,11 @@ public class Product {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Product product = (Product) o;
-        return id == product.id && quantity == product.quantity && Objects.equals(name, product.name);
+        return id == product.id && quantity == product.quantity && price == product.price && Objects.equals(name, product.name) && categories == product.categories;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, quantity, price, categories);
     }
 }
