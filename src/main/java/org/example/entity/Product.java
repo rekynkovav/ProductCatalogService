@@ -1,8 +1,11 @@
-package org.example.product;
+package org.example.entity;
 
+import java.io.Serializable;
 import java.util.Objects;
 
-public class Product {
+public class Product implements Serializable {
+
+    private static final Long serialVersionUID = 1L;
     private long id;
     private String name;
     private int quantity;
@@ -15,6 +18,9 @@ public class Product {
         this.quantity = quantity;
         this.price = price;
         this.categories = categories;
+    }
+
+    public Product() {
     }
 
     public void setName(String name) {
@@ -45,6 +51,10 @@ public class Product {
         return price;
     }
 
+    public int getQuantity() {
+        return quantity;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
@@ -55,5 +65,16 @@ public class Product {
     @Override
     public int hashCode() {
         return Objects.hash(id, name, quantity, price, categories);
+    }
+
+    @Override
+    public String toString() {
+        return "Product{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", quantity=" + quantity +
+                ", price=" + price +
+                ", categories=" + categories +
+                '}';
     }
 }
