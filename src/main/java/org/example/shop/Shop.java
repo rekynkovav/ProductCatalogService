@@ -4,10 +4,11 @@ import org.example.entity.Categories;
 import org.example.entity.Product;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Shop {
-    private HashMap<Long,Product> productMap;
+    public static HashMap<Long,Product> productMap;
 
     public Shop() {
         int sizeShop = 50;
@@ -15,7 +16,7 @@ public class Shop {
     }
 
     public void addProduct (Product product){
-        productMap.put(product.getId(), product);
+        productMap.put(Product.id, product);
     }
 
     public void changeProduct(long id, String name, int quantity, int price, Categories categories){
@@ -27,10 +28,6 @@ public class Shop {
 
     public void deleteProduct (long id){
         productMap.remove(id);
-    }
-
-    public String showProductId (long id){
-        return productMap.get(id).toString();
     }
 
     public HashMap<Long, Product> getProductMap() {
@@ -51,7 +48,16 @@ public class Shop {
        }
     }
 
-    public String searchProduct (String name){
-        return null;
+    public void searchCategories (Categories categories){
+        List<Product> listProduct = productMap.values()
+                .stream()
+                .filter(product -> product.getCategories().equals(categories))
+                .toList();
+
+        if(!listProduct.isEmpty()){
+            listProduct.forEach(System.out::println);
+        }else{
+            System.out.println("В данной категории нет товаров");
+        }
     }
 }

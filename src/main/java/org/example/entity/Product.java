@@ -1,19 +1,22 @@
 package org.example.entity;
 
+import org.example.shop.Shop;
+
 import java.io.Serializable;
 import java.util.Objects;
 
 public class Product implements Serializable {
 
+
     private static final Long serialVersionUID = 1L;
-    private long id;
+    public static long id = Shop.productMap.size();
     private String name;
     private int quantity;
     private int price;
     private Categories categories;
 
-    public Product(long id, String name, int quantity, int price, Categories categories) {
-        this.id = id;
+    public Product(String name, int quantity, int price, Categories categories) {
+        id++;
         this.name = name;
         this.quantity = quantity;
         this.price = price;
@@ -55,16 +58,20 @@ public class Product implements Serializable {
         return quantity;
     }
 
+    public Categories getCategories() {
+        return categories;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Product product = (Product) o;
-        return id == product.id && quantity == product.quantity && price == product.price && Objects.equals(name, product.name) && categories == product.categories;
+        return quantity == product.quantity && price == product.price && Objects.equals(name, product.name) && categories == product.categories;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, quantity, price, categories);
+        return Objects.hash(name, quantity, price, categories);
     }
 
     @Override

@@ -26,7 +26,13 @@ public class Front {
         if(userMap.containsKey(userName) && userMap.get(userName).getPassword().equals(password)){
             return true;
         }
-        System.out.println("Логин или пароль не верны");
+        System.out.println("Hе верный пароль");
         return false;
     }
+
+    public User getUser(String name){
+        return userMap.get(name);
+    }
+
+
 }
