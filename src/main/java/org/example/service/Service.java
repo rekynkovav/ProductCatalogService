@@ -1,45 +1,48 @@
 package org.example.service;
 
-import org.example.entity.Product;
+import org.example.entity.Role;
 import org.example.entity.User;
 
-import java.io.*;
 import java.util.HashMap;
 
+/**
+ * security класс для предоставления доступа к данным магазина
+ * содержит мапу пользователей
+ * метод registerUser для регистрации новых пользователей
+ * метод checkUser для проверки зарегистрированного пользователя в базе
+ * метод getThisUser для доступа к текущему авторизованному пользователю
+ */
 public class Service {
-    public static void saveProduct(HashMap<Long, Product> map) {
-        try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream("C:\\Users\\Suveren\\IdeaProjects\\ProductCatalogService\\src\\main\\resources\\product.txt"));) {
-            objectOutputStream.writeObject(map);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+    private HashMap<String, User> userMap = new HashMap<>();
+    private static User thisUser;
+
+    public HashMap<String, User> getUserMap() {
+        return userMap;
     }
 
-    public static HashMap<Long, Product> loadProduct() {
-        try (ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream("C:\\Users\\Suveren\\IdeaProjects\\ProductCatalogService\\src\\main\\resources\\product.txt"));) {
-            HashMap<Long, Product> map = (HashMap<Long, Product>) objectInputStream.readObject();
-            return map;
-        } catch (IOException | ClassNotFoundException e) {
-            System.out.println("При десериализации списка продуктов возникла ошибка");
-            return new HashMap<>();
-        }
+    public void setUserMap(HashMap<String, User> userMap) {
+        this.userMap = userMap;
     }
 
-    public static void saveUser(HashMap<String, User> map) {
-        try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(new FileOutputStream("C:\\Users\\Suveren\\IdeaProjects\\ProductCatalogService\\src\\main\\resources\\user.txt"));) {
-            objectOutputStream.writeObject(map);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public void registerUser(String userName, String password, Role role) {
+        User user = new User(userName, password, role);
+        userMap.put(userName, user);
+        thisUser = userMap.get(userName);
+        thisUser.setIn(thisUser.getIn() + 1);
     }
 
-    public static HashMap<String, User> loadUser() {
-        try (ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream("C:\\Users\\Suveren\\IdeaProjects\\ProductCatalogService\\src\\main\\resources\\user.txt"));) {
-            HashMap<String, User> map = (HashMap<String, User>) objectInputStream.readObject();
-            return map;
-        } catch (IOException | ClassNotFoundException e) {
-            System.out.println("При десериализации списка юзеров возникла ошибка");
-            return new HashMap<>();
+    public boolean checkUser(String userName, String password) {
+        if (userMap.containsKey(userName) && userMap.get(userName).getPassword().equals(password)) {
+            thisUser = userMap.get(userName);
+            thisUser.setIn(thisUser.getIn() + 1);
+            return true;
         }
+        System.out.println("Hе верный пароль");
+        return false;
+    }
+
+    public static User getThisUser() {
+        return thisUser;
     }
 }

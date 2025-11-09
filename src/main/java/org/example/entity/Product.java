@@ -5,15 +5,27 @@ import org.example.shop.Shop;
 import java.io.Serializable;
 import java.util.Objects;
 
+/**
+ * модель товара магазина
+ * поля
+ * номер товара
+ * название
+ * количество товара
+ * цена
+ * категория
+ */
 public class Product implements Serializable {
 
-
     private static final Long serialVersionUID = 1L;
-    public static long id = Shop.productMap.size();
+    public static long id;
     private String name;
     private int quantity;
     private int price;
     private Categories categories;
+
+    static {
+        id = Shop.productMap.size();
+    }
 
     public Product(String name, int quantity, int price, Categories categories) {
         id++;
@@ -24,6 +36,10 @@ public class Product implements Serializable {
     }
 
     public Product() {
+    }
+
+    public static void setId(long id) {
+        Product.id = id;
     }
 
     public void setName(String name) {
@@ -77,7 +93,7 @@ public class Product implements Serializable {
     @Override
     public String toString() {
         return name +
-                ", количество: " + quantity +
-                ", цена: " + price;
+               ", количество: " + quantity + " шт" +
+               ", цена: " + price;
     }
 }
