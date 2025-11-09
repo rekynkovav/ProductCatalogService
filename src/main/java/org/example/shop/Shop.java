@@ -3,12 +3,14 @@ package org.example.shop;
 import org.example.entity.Categories;
 import org.example.entity.Product;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class Shop {
     public static HashMap<Long,Product> productMap;
+    private ArrayList<Product> listProduct;
 
     public Shop() {
         int sizeShop = 50;
@@ -59,5 +61,9 @@ public class Shop {
         }else{
             System.out.println("В данной категории нет товаров");
         }
+    }
+
+    public void addBasket (long id, int quantity){
+        /// //
     }
 }

@@ -7,6 +7,7 @@ import org.example.front.Front;
 import org.example.service.Service;
 import org.example.shop.Shop;
 
+import java.sql.SQLOutput;
 import java.util.Scanner;
 
 public class Main {
@@ -72,28 +73,33 @@ public class Main {
         System.exit(0);
     }
 
-    private static void userBar() {
+    private static void showMenuUser() {
+        System.out.println("Посмотреть список товаров введите: 1");
+        System.out.println("Добавить товар в корзину введите: 2");
+        System.out.println("Фильтровать товар введите: 3 и через пробел категорию clothes, food, tools, electronics, other");
+        System.out.println("Введите 4 для выхода");
     }
 
-    private static void adminBar() {
+    private static void userBar() {
         long id;
         String name;
         int quantity;
         int price;
         Categories categories;
-        showMenuAdmin();
+        System.out.println();
+        showMenuUser();
+
         switch (scanner.nextInt()) {
             case 1:
-                System.out.println("Введите наименование товара: ");
-                name = scanner.next();
-                System.out.println("Введите количество товара: ");
+                shop.showAllProduct();
+                userBar();
+            case 2:
+                System.out.println("Введите номер товара: ");
+                id = scanner.nextLong();
+                System.out.println("Введите количество: ");
                 quantity = scanner.nextInt();
-                System.out.println("Введите цену товара: ");
-                price = scanner.nextInt();
-                System.out.println("Введите категорию товара clothes, food, tools, electronics, other: ");
-                categories = Categories.valueOf(scanner.next());
-                shop.addProduct(new Product(name, quantity, price, categories));
-                break;
+                shop.addBasket(long id, int quantity);
+                adminBar();
             case 2:
                 shop.showAllProduct();
                 System.out.println("Введите номер товара который хотите изменить: ");
@@ -108,24 +114,76 @@ public class Main {
                 categories = Categories.valueOf(scanner.next());
                 shop.changeProduct(id, name, quantity, price, categories);
                 shop.showAllProduct();
-                break;
+                adminBar();
             case 3:
                 shop.showAllProduct();
                 System.out.println("Введите номер товара который хотите удалить: ");
                 id = scanner.nextLong();
                 shop.deleteProduct(id);
                 shop.showAllProduct();
-                break;
-            case 4:
-                shop.showAllProduct();
                 adminBar();
-                break;
             case 5:
                 shop.showAllProduct();
                 System.out.println("Введите категорию товара clothes, food, tools, electronics, other: ");
                 categories = Categories.valueOf(scanner.next());
                 shop.searchCategories(categories);
-                break;
+                adminBar();
+            case 6:
+                System.exit(0);
+        }
+    }
+
+    private static void adminBar() {
+        long id;
+        String name;
+        int quantity;
+        int price;
+        Categories categories;
+        System.out.println();
+        showMenuAdmin();
+        switch (scanner.nextInt()) {
+            case 1:
+                System.out.println("Введите наименование товара: ");
+                name = scanner.next();
+                System.out.println("Введите количество товара: ");
+                quantity = scanner.nextInt();
+                System.out.println("Введите цену товара: ");
+                price = scanner.nextInt();
+                System.out.println("Введите категорию товара clothes, food, tools, electronics, other: ");
+                categories = Categories.valueOf(scanner.next());
+                shop.addProduct(new Product(name, quantity, price, categories));
+                adminBar();
+            case 2:
+                shop.showAllProduct();
+                System.out.println("Введите номер товара который хотите изменить: ");
+                id = scanner.nextLong();
+                System.out.println("Введите наименование товара: ");
+                name = scanner.next();
+                System.out.println("Введите количество товара: ");
+                quantity = scanner.nextInt();
+                System.out.println("Введите цену товара: ");
+                price = scanner.nextInt();
+                System.out.println("Введите категорию товара clothes, food, tools, electronics, other: ");
+                categories = Categories.valueOf(scanner.next());
+                shop.changeProduct(id, name, quantity, price, categories);
+                shop.showAllProduct();
+                adminBar();
+            case 3:
+                shop.showAllProduct();
+                System.out.println("Введите номер товара который хотите удалить: ");
+                id = scanner.nextLong();
+                shop.deleteProduct(id);
+                shop.showAllProduct();
+                adminBar();
+            case 4:
+                shop.showAllProduct();
+                adminBar();
+            case 5:
+                shop.showAllProduct();
+                System.out.println("Введите категорию товара clothes, food, tools, electronics, other: ");
+                categories = Categories.valueOf(scanner.next());
+                shop.searchCategories(categories);
+                adminBar();
             case 6:
                 System.exit(0);
         }
@@ -138,6 +196,5 @@ public class Main {
         System.out.println("Посмотреть список товаров введите: 4");
         System.out.println("Фильтровать товар введите: 5 и через пробел категорию clothes, food, tools, electronics, other");
         System.out.println("Введите 6 для выхода");
-
     }
 }
