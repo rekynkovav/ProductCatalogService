@@ -1,6 +1,6 @@
-package org.example.entity;
+package org.example.model.entity;
 
-import org.example.shop.Shop;
+import org.example.repository.impl.UserRepositoryImpl;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -16,30 +16,25 @@ import java.util.Objects;
  */
 public class Product implements Serializable {
 
-    private static final Long serialVersionUID = 1L;
-    public static long id;
+    private static final long SerialVersionUID = 1;
+    private long id;
     private String name;
     private int quantity;
     private int price;
     private Categories categories;
+    private UserRepositoryImpl userRepository;
 
-    static {
-        id = Shop.productMap.size();
+    {
+        userRepository = new UserRepositoryImpl();
     }
 
     public Product(String name, int quantity, int price, Categories categories) {
+        id = userRepository.getUserMap().size();
         id++;
         this.name = name;
         this.quantity = quantity;
         this.price = price;
         this.categories = categories;
-    }
-
-    public Product() {
-    }
-
-    public static void setId(long id) {
-        Product.id = id;
     }
 
     public void setName(String name) {
@@ -50,16 +45,27 @@ public class Product implements Serializable {
         this.quantity = quantity;
     }
 
+    public long getId() {
+        return id;
+    }
+
+    /**
+     * метод для вычитания количества товара при покупке
+     */
+    public void subtractQuantity(int temp) {
+        quantity -= temp;
+    }
+
+    public void appendQuantity(int temp) {
+        quantity += temp;
+    }
+
     public void setPrice(int price) {
         this.price = price;
     }
 
     public void setCategories(Categories categories) {
         this.categories = categories;
-    }
-
-    public long getId() {
-        return id;
     }
 
     public String getName() {
@@ -93,7 +99,7 @@ public class Product implements Serializable {
     @Override
     public String toString() {
         return name +
-               ", количество: " + quantity + " шт" +
-               ", цена: " + price;
+                ", количество: " + quantity + " шт" +
+                ", цена: " + price;
     }
 }
