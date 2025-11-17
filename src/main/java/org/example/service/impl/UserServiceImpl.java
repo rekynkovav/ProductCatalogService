@@ -6,14 +6,20 @@ import org.example.service.UserService;
 
 public class UserServiceImpl implements UserService {
 
-    private UserRepositoryImpl userRepository;
-    public void setUserRepository(UserRepositoryImpl userRepository) {
-        this.userRepository = userRepository;
+    private static UserServiceImpl userService;
+
+    public static UserServiceImpl getInstance(){
+        if (userService == null) {
+            userService = new UserServiceImpl();
+        }
+        return userService;
     }
 
-    {
-        userRepository = new UserRepositoryImpl();
+    private UserServiceImpl(){
+
     }
+
+    private static UserRepositoryImpl userRepository = UserRepositoryImpl.getInstance();
 
     @Override
     public void addUser(User user) {
@@ -25,8 +31,4 @@ public class UserServiceImpl implements UserService {
         return userRepository.isContainsUser(userName);
     }
 
-    @Override
-    public User getUserForName(String userName) {
-        return userRepository.getUserMap().get(userName);
-    }
 }

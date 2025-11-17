@@ -17,24 +17,22 @@ import java.util.Objects;
 public class Product implements Serializable {
 
     private static final long SerialVersionUID = 1;
-    private long id;
+    private static long id;
     private String name;
     private int quantity;
     private int price;
     private Categories categories;
-    private UserRepositoryImpl userRepository;
-
-    {
-        userRepository = new UserRepositoryImpl();
-    }
 
     public Product(String name, int quantity, int price, Categories categories) {
-        id = userRepository.getUserMap().size();
         id++;
         this.name = name;
         this.quantity = quantity;
         this.price = price;
         this.categories = categories;
+    }
+
+    static {
+        id = UserRepositoryImpl.getInstance().getUserMap().size();
     }
 
     public void setName(String name) {
@@ -53,11 +51,11 @@ public class Product implements Serializable {
      * метод для вычитания количества товара при покупке
      */
     public void subtractQuantity(int temp) {
-        quantity -= temp;
+        quantity = quantity - temp;
     }
 
     public void appendQuantity(int temp) {
-        quantity += temp;
+        quantity = quantity + temp;
     }
 
     public void setPrice(int price) {

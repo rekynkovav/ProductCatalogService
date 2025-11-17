@@ -3,6 +3,7 @@ package org.example.repository.impl;
 import org.example.model.entity.Product;
 import org.example.repository.ProductRepository;
 import org.example.repository.enumPath.StoragePath;
+import org.example.service.impl.AuditServiceImpl;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -12,6 +13,20 @@ import java.io.ObjectOutputStream;
 import java.util.HashMap;
 
 public class ProductRepositoryImpl implements ProductRepository {
+
+    private static ProductRepositoryImpl productRepository;
+
+    public static ProductRepositoryImpl getInstance(){
+        if (productRepository == null) {
+            productRepository = new ProductRepositoryImpl();
+        }
+        return productRepository;
+    }
+
+    private ProductRepositoryImpl(){
+
+    }
+
     private HashMap<Long, Product> productMap;
 
     {

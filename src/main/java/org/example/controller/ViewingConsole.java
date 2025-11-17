@@ -5,8 +5,7 @@ import org.example.model.entity.Categories;
 import org.example.model.entity.Product;
 import org.example.model.entity.Role;
 import org.example.model.entity.User;
-import org.example.repository.impl.AuditRepositoryImpl;
-import org.example.repository.impl.UserRepositoryImpl;
+import org.example.service.impl.AuditServiceImpl;
 import org.example.service.impl.ProductServiceImpl;
 import org.example.service.impl.UserServiceImpl;
 
@@ -24,33 +23,25 @@ import java.util.Scanner;
  * запросы и действия пользователей как админов так и покупателей
  */
 public class ViewingConsole {
-    private ProductServiceImpl productService;
-    private UserServiceImpl userService;
-    private UserSecurityConfigImpl userSecurityConfig;
-    private AuditRepositoryImpl auditRepositoryImpl;
+
     private String userName;
     private String password;
     private Scanner scanner;
     private String showMenuUser;
     private String showMenuAdmin;
-    private UserRepositoryImpl userRepository;
+
+    private ProductServiceImpl productService = ProductServiceImpl.getInstance();
+    private UserServiceImpl userService = UserServiceImpl.getInstance();
+    private UserSecurityConfigImpl userSecurityConfig = UserSecurityConfigImpl.getInstance();
+    private AuditServiceImpl auditService = AuditServiceImpl.getInstance();
 
     {
         showMenuUser = """
                 """;
         showMenuAdmin = """
                 """;
-        userRepository = new UserRepositoryImpl();
-        productService = new ProductServiceImpl();
-        userService = new UserServiceImpl();
-        userSecurityConfig = new UserSecurityConfigImpl();
-        auditRepositoryImpl = new AuditRepositoryImpl();
         scanner = new Scanner(System.in);
-        productService.setUserRepository(userRepository);
-        productService.setAuditRepository(auditRepositoryImpl);
-        productService.setUserSecurityService(userSecurityConfig);
     }
-
 
     /**
      * метод Start для авторизации или регистрации новых пользователей
@@ -111,6 +102,7 @@ public class ViewingConsole {
      */
     private void showMenuUser() {
         showMenuUser = """ 
+                
                 Посмотреть список товаров введите: 1
                 Добавить товар в корзину введите: 2
                 Фильтровать товар введите по категориям: 3
@@ -160,18 +152,22 @@ public class ViewingConsole {
                 }
                 userBar();
             case 5:
-                if (!auditRepositoryImpl.getMapPopularProducts().isEmpty()) {
-                    for (Map.Entry<Long, Product> entry : auditRepositoryImpl.getMapPopularProducts().entrySet()) {
-                        System.out.println(entry.getValue().getName() + ", " + "запрашивали: " + entry.getValue().getQuantity() + " раз");
-                    }
-                } else {
-                    System.out.println("Список часто запрашиваемых товаров пуст");
-                }
+                printMap();
                 userBar();
             case 6:
                 userSecurityConfig.getThisUser().appendOut();
                 productService.saveAllMapFromDB();
                 System.exit(0);
+        }
+    }
+
+    private void printMap() {
+        if (!auditService.getPopularProductsMap().isEmpty()) {
+            for (Map.Entry<Long, Product> entry : auditService.getPopularProductsMap().entrySet()) {
+                System.out.println(entry.getValue().getName() + ", " + "запрашивали: " + entry.getValue().getQuantity() + " раз");
+            }
+        } else {
+            System.out.println("Список часто запрашиваемых товаров пуст");
         }
     }
 
@@ -214,6 +210,7 @@ public class ViewingConsole {
                 System.out.println("Введите категорию товара clothes, food, tools, electronics, other: ");
                 categories = Categories.valueOf(scanner.next());
                 productService.addProduct(new Product(name, quantity, price, categories));
+                System.out.println("Товар успешно добавлен");
                 userSecurityConfig.getThisUser().AddCountProducts();
                 adminBar();
             case 2:
@@ -249,17 +246,11 @@ public class ViewingConsole {
                 productService.searchCategories(categories);
                 adminBar();
             case 6:
-                if (!auditRepositoryImpl.getMapPopularProducts().isEmpty()) {
-                    for (Map.Entry<Long, Product> entry : auditRepositoryImpl.getMapPopularProducts().entrySet()) {
-                        System.out.println(entry.getValue().getName() + ", " + "запрашивали: " + entry.getValue().getQuantity() + " раз");
-                    }
-                } else {
-                    System.out.println("Список часто запрашиваемых товаров пуст");
-                }
+                printMap();
                 adminBar();
             case 7:
-                if (!auditRepositoryImpl.getMapRequestUser().isEmpty()) {
-                    for (Map.Entry<String, User> entry : auditRepositoryImpl.getMapRequestUser().entrySet()) {
+                if (!auditService.getRequestUserMap().isEmpty()) {
+                    for (Map.Entry<String, User> entry : auditService.getRequestUserMap().entrySet()) {
                         System.out.println("Пользователь " + entry.getValue().getUserName()
                                 + " роль " + entry.getValue().getRole()
                                 + " вошел/вышел " + entry.getValue().getIn() + " раз" + " его активность: " + " добавил товаров в магазин" + entry.getValue().getAddProducts()
@@ -275,22 +266,6 @@ public class ViewingConsole {
                 productService.saveAllMapFromDB();
                 System.exit(0);
         }
-    }
-
-    public void setProductService(ProductServiceImpl productService) {
-        this.productService = productService;
-    }
-
-    public void setUserService(UserServiceImpl userService) {
-        this.userService = userService;
-    }
-
-    public void setUserSecurityConfig(UserSecurityConfigImpl userSecurityConfig) {
-        this.userSecurityConfig = userSecurityConfig;
-    }
-
-    public void setAuditRepository(AuditRepositoryImpl auditRepository) {
-        this.auditRepositoryImpl = auditRepository;
     }
 }
 

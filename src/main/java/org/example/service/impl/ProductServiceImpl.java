@@ -26,35 +26,24 @@ import java.util.Map;
  */
 public class ProductServiceImpl implements ProductService {
 
-    private UserServiceImpl userService;
-    private UserSecurityConfigImpl userSecurityService;
-    private ProductRepositoryImpl productRepositoryImpl;
-    private AuditRepositoryImpl auditRepositoryImpl;
-    private UserRepositoryImpl userRepository;
+    private static ProductServiceImpl productServiceImpl;
 
-    {
-        userRepository = new UserRepositoryImpl();
-        productRepositoryImpl = new ProductRepositoryImpl();
-        auditRepositoryImpl = new AuditRepositoryImpl();
-        userService = new UserServiceImpl();
-        userSecurityService = new UserSecurityConfigImpl();
+    public static ProductServiceImpl getInstance(){
+        if (productServiceImpl == null) {
+            productServiceImpl = new ProductServiceImpl();
+        }
+        return productServiceImpl;
     }
 
-    public void setProductRepositoryImpl(ProductRepositoryImpl productRepositoryImpl) {
-        this.productRepositoryImpl = productRepositoryImpl;
+    private ProductServiceImpl(){
+
     }
 
-    public void setUserRepository(UserRepositoryImpl userRepository) {
-        this.userRepository = userRepository;
-    }
-
-    public void setAuditRepository(AuditRepositoryImpl auditRepository) {
-        this.auditRepositoryImpl = auditRepository;
-    }
-
-    public void setUserSecurityService(UserSecurityConfigImpl userSecurityService) {
-        this.userSecurityService = userSecurityService;
-    }
+    private UserServiceImpl productService = UserServiceImpl.getInstance();
+    private UserSecurityConfigImpl userSecurityService = UserSecurityConfigImpl.getInstance();
+    private ProductRepositoryImpl productRepositoryImpl = ProductRepositoryImpl.getInstance();
+    private AuditRepositoryImpl auditRepositoryImpl = AuditRepositoryImpl.getInstance();
+    private UserRepositoryImpl userRepository = UserRepositoryImpl.getInstance();
 
     @Override
     public void addProduct(Product product) {
@@ -86,6 +75,7 @@ public class ProductServiceImpl implements ProductService {
         } else {
             System.out.println("товаров нет в наличии");
         }
+        System.out.println();
     }
 
     @Override
@@ -145,24 +135,30 @@ public class ProductServiceImpl implements ProductService {
          * добаляет в аудит user который совершил покупку
          * добавляет в аудит товар который добавили
          */
-        int availableQuantity = productRepositoryImpl.getProductMap().get(id).getQuantity();
-        if (quantity <= availableQuantity) {
-            if (checkingBasketForProduct(id)) {
-                userSecurityService.getThisUser().getMapBasket().put(id, productRepositoryImpl.getProductMap().get(id));
-                userSecurityService.getThisUser().getMapBasket().get(id).setQuantity(quantity);
-                saveStatistic(id, quantity);
-
-                System.out.println("товары успешно добавлены в корзину");
-                return;
-            } else {
-                userSecurityService.getThisUser().getMapBasket().put(id, productRepositoryImpl.getProductMap().get(id));
-                userSecurityService.getThisUser().getMapBasket().get(id).setQuantity(quantity);
-                saveStatistic(id, quantity);
-                System.out.println("товары успешно добавлены в корзину");
-                return;
+        if (productRepositoryImpl.getProductMap().containsKey(id)) {
+            int availableQuantity = productRepositoryImpl.getProductMap().get(id).getQuantity();
+            if (quantity <= availableQuantity) {
+                if (checkingBasketForProduct(id)) { // если товар есть в корзине
+                    userSecurityService.getThisUser().getMapBasket().get(id).appendQuantity(quantity);
+                    serviceBasket(id, quantity);
+                    return;
+                } else {
+                    userSecurityService.getThisUser().getMapBasket().put(id, productRepositoryImpl.getProductMap().get(id));
+                    userSecurityService.getThisUser().getMapBasket().get(id).setQuantity(quantity);
+                    serviceBasket(id, quantity);
+                    return;
+                }
             }
+            System.out.println("вы можете купить только " + availableQuantity);
+        }else{
+            System.out.println("Такого товара нет в наличии");
         }
-        System.out.println("вы можете купить только " + availableQuantity);
+    }
+
+    private void serviceBasket(long id, int quantity) {
+        productRepositoryImpl.getProductMap().get(id).subtractQuantity(quantity);
+        saveStatistic(id, quantity);
+        System.out.println("товары успешно добавлены в корзину");
     }
 
     @Override
@@ -174,14 +170,6 @@ public class ProductServiceImpl implements ProductService {
         productRepositoryImpl.getProductMap().get(id).subtractQuantity(quantity);
         auditRepositoryImpl.auditUserAddBasket(userSecurityService.getThisUser().getUserName());
         auditRepositoryImpl.setPopularProducts(id);
-    }
-
-    public void setProductRepository(ProductRepositoryImpl productRepository) {
-        this.productRepositoryImpl = productRepository;
-    }
-
-    public void setUserService(UserServiceImpl userService) {
-        this.userService = userService;
     }
 }
 

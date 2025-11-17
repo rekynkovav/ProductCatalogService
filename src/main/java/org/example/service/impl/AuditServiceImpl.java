@@ -1,6 +1,7 @@
 package org.example.service.impl;
 
 import org.example.config.UserSecurityConfig;
+import org.example.config.impl.UserSecurityConfigImpl;
 import org.example.model.entity.Product;
 import org.example.model.entity.User;
 import org.example.repository.impl.AuditRepositoryImpl;
@@ -9,29 +10,31 @@ import org.example.service.AuditService;
 import java.util.HashMap;
 
 public class AuditServiceImpl implements AuditService {
-    private AuditRepositoryImpl repository;
 
-    public void setUserSecurityConfig(UserSecurityConfig userSecurityConfig) {
-        this.userSecurityConfig = userSecurityConfig;
+    private static AuditServiceImpl auditService;
+
+    public static AuditServiceImpl getInstance(){
+        if (auditService == null) {
+            auditService = new AuditServiceImpl();
+        }
+        return auditService;
     }
 
-    private UserSecurityConfig userSecurityConfig;
+    private AuditServiceImpl(){
 
-    public void setRepository(AuditRepositoryImpl repository) {
-        this.repository = repository;
     }
 
-    {
-        repository = new AuditRepositoryImpl();
-    }
+    private AuditRepositoryImpl auditRepository = AuditRepositoryImpl.getInstance();
+
+    private UserSecurityConfig userSecurityConfig = UserSecurityConfigImpl.getInstance();
 
     @Override
     public HashMap<Long, Product> getPopularProductsMap() {
-        return repository.getMapPopularProducts();
+        return auditRepository.getMapPopularProducts();
     }
 
     @Override
     public HashMap<String, User> getRequestUserMap() {
-        return repository.getMapRequestUser();
+        return auditRepository.getMapRequestUser();
     }
 }

@@ -13,18 +13,27 @@ import java.util.HashMap;
  * добавление удаление изменение товаров добавление товаров в корзину
  */
 public class AuditRepositoryImpl implements AuditRepository {
+
+    private static AuditRepositoryImpl auditRepository;
+
+    public static AuditRepositoryImpl getInstance(){
+        if (auditRepository == null) {
+            auditRepository = new AuditRepositoryImpl();
+        }
+        return auditRepository;
+    }
+
+    private AuditRepositoryImpl(){
+
+    }
+
     private HashMap<Long, Product> popularProducts;
     private HashMap<String, User> requestUser;
-    private UserSecurityConfigImpl userSecurityConfig;
-
-    public void setUserSecurityConfig(UserSecurityConfigImpl userSecurityConfig) {
-        this.userSecurityConfig = userSecurityConfig;
-    }
+    private UserSecurityConfigImpl userSecurityConfig = UserSecurityConfigImpl.getInstance();
 
     {
         popularProducts = new HashMap<>(50);
         requestUser = new HashMap<>(50);
-        userSecurityConfig = new UserSecurityConfigImpl();
     }
 
     @Override
@@ -45,11 +54,6 @@ public class AuditRepositoryImpl implements AuditRepository {
     @Override
     public HashMap<String, User> getMapRequestUser() {
         return requestUser;
-    }
-
-    @Override
-    public void setRequestUser(HashMap<String, User> requestUser) {
-        this.requestUser = requestUser;
     }
 
     @Override

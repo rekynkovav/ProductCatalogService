@@ -6,7 +6,4 @@ public interface UserService {
     void addUser(User user);
 
     boolean isContainsUser(String userName);
-
-    User getUserForName(String userName);
-
 }

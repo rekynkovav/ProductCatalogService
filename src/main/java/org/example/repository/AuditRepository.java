@@ -12,8 +12,6 @@ public interface AuditRepository {
 
     HashMap<String, User> getMapRequestUser();
 
-    void setRequestUser(HashMap<String, User> requestUser);
-
     void auditUserAddBasket(String name);
 
     void setMapPopularProducts(HashMap<Long, Product> map);

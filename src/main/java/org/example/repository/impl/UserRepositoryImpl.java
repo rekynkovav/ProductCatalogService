@@ -3,6 +3,7 @@ package org.example.repository.impl;
 import org.example.model.entity.User;
 import org.example.repository.UserRepository;
 import org.example.repository.enumPath.StoragePath;
+import org.example.service.impl.UserServiceImpl;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -12,6 +13,21 @@ import java.io.ObjectOutputStream;
 import java.util.HashMap;
 
 public class UserRepositoryImpl implements UserRepository {
+
+    private static UserRepositoryImpl userRepository;
+
+    public static UserRepositoryImpl getInstance(){
+        if (userRepository == null) {
+            userRepository = new UserRepositoryImpl();
+        }
+        return userRepository;
+    }
+
+    private UserRepositoryImpl(){
+
+    }
+
+
     private HashMap<String, User> userMap;
 
     {

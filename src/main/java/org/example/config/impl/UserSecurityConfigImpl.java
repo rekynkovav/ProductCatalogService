@@ -4,19 +4,27 @@ import org.example.config.UserSecurityConfig;
 import org.example.model.entity.Role;
 import org.example.model.entity.User;
 import org.example.repository.impl.UserRepositoryImpl;
+import org.example.service.impl.UserServiceImpl;
 
 public class UserSecurityConfigImpl implements UserSecurityConfig {
 
-    private UserRepositoryImpl userRepository;
+    private static UserSecurityConfigImpl userSecurityConfig;
+
+    public static UserSecurityConfigImpl getInstance(){
+        if (userSecurityConfig == null) {
+            userSecurityConfig = new UserSecurityConfigImpl();
+        }
+        return userSecurityConfig;
+    }
+
+    private UserSecurityConfigImpl(){
+
+    }
+
+    private UserRepositoryImpl userRepository = UserRepositoryImpl.getInstance();
+    private UserServiceImpl userServise = UserServiceImpl.getInstance();
     private User thisUser;
 
-    {
-        userRepository = new UserRepositoryImpl();
-    }
-
-    public void setUserRepository(UserRepositoryImpl userRepository) {
-        this.userRepository = userRepository;
-    }
 
     public User getThisUser() {
         return thisUser;
@@ -47,7 +55,7 @@ public class UserSecurityConfigImpl implements UserSecurityConfig {
     public void registerUser(String userName, String password, Role role) {
         User user = new User(userName, password, role);
         user.setIn(1);
-        userRepository.addUser(user);
+        userServise.addUser(user);
         thisUser = user;
     }
 
