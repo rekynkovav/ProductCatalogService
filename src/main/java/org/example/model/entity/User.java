@@ -1,136 +1,182 @@
 package org.example.model.entity;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Objects;
 
-public class User implements Serializable {
+/**
+ * Модель пользователя системы.
+ * Содержит основную информацию о пользователе и его корзину товаров.
+ * Реализует интерфейс Serializable для поддержки сериализации.
+ */
+public class User {
+    /**
+     * Уникальный идентификатор пользователя.
+     */
+    private long id;
 
-    private static final long SerialVersionUID = 1;
+    /**
+     * Имя пользователя для входа в систему.
+     */
     private String userName;
+
+    /**
+     * Пароль пользователя.
+     */
     private String password;
-    private int in;
-    private int out;
-    private int addProducts;
-    private int deleteProducts;
-    private int modificationProducts;
-    private int addBasket;
+
+    /**
+     * Роль пользователя в системе.
+     */
     private Role role;
 
+    /**
+     * Корзина товаров пользователя.
+     * Ключ - идентификатор товара, значение - товар с количеством.
+     */
     private HashMap<Long, Product> mapBasket;
 
-    {
-        in = 0;
-        out = 0;
-        addProducts = 0;
-        deleteProducts = 0;
-        modificationProducts = 0;
-        addBasket = 0;
-        mapBasket = new HashMap<>(50);
+    /**
+     * Конструктор по умолчанию.
+     * Инициализирует пустую корзину товаров.
+     */
+    public User() {
+        this.mapBasket = new HashMap<>();
     }
 
+    /**
+     * Конструктор с параметрами.
+     *
+     * @param userName имя пользователя
+     * @param password пароль пользователя
+     * @param role     роль пользователя
+     */
     public User(String userName, String password, Role role) {
+        this();
         this.userName = userName;
         this.password = password;
         this.role = role;
     }
 
-    public User() {
+    /**
+     * Возвращает идентификатор пользователя.
+     *
+     * @return идентификатор пользователя
+     */
+    public long getId() {
+        return id;
     }
 
-    public HashMap<Long, Product> getMapBasket() {
-        return mapBasket;
+    /**
+     * Устанавливает идентификатор пользователя.
+     *
+     * @param id идентификатор пользователя
+     */
+    public void setId(long id) {
+        this.id = id;
     }
 
-    public void setMapBasket(HashMap<Long, Product> mapBasket) {
-        this.mapBasket = mapBasket;
-    }
-
-    public int getAddBasket() {
-        return addBasket;
-    }
-
-    public void appendAddBasket() {
-        addBasket++;
-    }
-
-    public int getIn() {
-        return in;
-    }
-
-    public void setIn(int in) {
-        this.in = in;
-    }
-
-    public int getOut() {
-        return out;
-    }
-
-    public void appendOut() {
-        out++;
-    }
-
-    public int getAddProducts() {
-        return addProducts;
-    }
-
-    public void AddCountProducts() {
-        addProducts++;
-    }
-
-    public int getDeleteProducts() {
-        return deleteProducts;
-    }
-
-    public void addCountDeleteProducts() {
-        deleteProducts++;
-    }
-
-    public int getModificationProducts() {
-        return modificationProducts;
-    }
-
-    public void addModificationProducts() {
-        modificationProducts++;
-    }
-
+    /**
+     * Возвращает имя пользователя.
+     *
+     * @return имя пользователя
+     */
     public String getUserName() {
         return userName;
     }
 
+    /**
+     * Устанавливает имя пользователя.
+     *
+     * @param userName имя пользователя
+     */
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    /**
+     * Возвращает пароль пользователя.
+     *
+     * @return пароль пользователя
+     */
     public String getPassword() {
         return password;
     }
 
+    /**
+     * Устанавливает пароль пользователя.
+     *
+     * @param password пароль пользователя
+     */
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    /**
+     * Возвращает роль пользователя.
+     *
+     * @return роль пользователя
+     */
     public Role getRole() {
         return role;
     }
 
+    /**
+     * Устанавливает роль пользователя.
+     *
+     * @param role роль пользователя
+     */
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
+    /**
+     * Возвращает корзину товаров пользователя.
+     *
+     * @return карта товаров в корзине
+     */
+    public HashMap<Long, Product> getMapBasket() {
+        return mapBasket;
+    }
+
+    /**
+     * Устанавливает корзину товаров пользователя.
+     *
+     * @param mapBasket карта товаров в корзине
+     */
+    public void setMapBasket(HashMap<Long, Product> mapBasket) {
+        this.mapBasket = mapBasket;
+    }
+
+    /**
+     * Возвращает строковое представление пользователя.
+     *
+     * @return строка с информацией о пользователе
+     */
     @Override
     public String toString() {
         return "User{" +
-                "userName='" + userName + '\'' +
-                ", password='" + password + '\'' +
-                ", in=" + in +
-                ", out=" + out +
-                ", addProducts=" + addProducts +
-                ", deleteProducts=" + deleteProducts +
-                ", modificationProducts=" + modificationProducts +
-                ", addBasket=" + addBasket +
-                ", role=" + role +
-                ", mapBasket=" + mapBasket +
-                '}';
+               "id=" + id +
+               ", userName='" + userName + '\'' +
+               ", role=" + role +
+               ", basketItems=" + mapBasket.size() +
+               '}';
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        return in == user.in && out == user.out && addProducts == user.addProducts && deleteProducts == user.deleteProducts && modificationProducts == user.modificationProducts && addBasket == user.addBasket && Objects.equals(userName, user.userName) && Objects.equals(password, user.password) && role == user.role && Objects.equals(mapBasket, user.mapBasket);
+        return id == user.id && Objects.equals(userName, user.userName) && Objects.equals(password, user.password) && role == user.role && Objects.equals(mapBasket, user.mapBasket);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int hashCode() {
-        return Objects.hash(userName, password, in, out, addProducts, deleteProducts, modificationProducts, addBasket, role, mapBasket);
+        return Objects.hash(id, userName);
     }
 }

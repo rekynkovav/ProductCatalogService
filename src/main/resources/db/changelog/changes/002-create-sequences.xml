@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <changeSet id="create-user-seq" author="Y_Lab_student">
+        <createSequence
+                sequenceName="user_id_seq"
+                schemaName="service"
+                startValue="1"
+                incrementBy="1"
+                cacheSize="50"/>
+    </changeSet>
+
+    <changeSet id="create-product-seq" author="Y_Lab_student">
+        <createSequence
+                sequenceName="product_id_seq"
+                schemaName="service"
+                startValue="1"
+                incrementBy="1"
+                cacheSize="50"/>
+    </changeSet>
+
+    <changeSet id="create-basket-seq" author="Y_Lab_student">
+        <createSequence
+                sequenceName="basket_item_seq"
+                schemaName="service"
+                startValue="1"
+                incrementBy="1"
+                cacheSize="100"/>
+    </changeSet>
+</databaseChangeLog>
