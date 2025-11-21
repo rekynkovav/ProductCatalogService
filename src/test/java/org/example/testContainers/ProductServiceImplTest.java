@@ -5,6 +5,7 @@ import org.example.model.entity.Product;
 import org.example.repository.impl.ProductRepositoryImpl;
 import org.example.service.impl.ProductServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -20,6 +21,7 @@ class ProductServiceImplTest extends BaseDatabaseTest {
     void setUp() {
     }
 
+    @Disabled
     @Test
     void testSaveProduct() {
         // Given

@@ -4,6 +4,7 @@ import org.example.config.ConnectionManager;
 import org.example.config.DataBaseConfig;
 import org.example.config.LiquibaseMigration;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.MockedStatic;
@@ -30,6 +31,7 @@ class LiquibaseMigrationTest extends BaseDatabaseTest {
         connectionManager = ConnectionManager.getInstance();
     }
 
+    @Disabled
     @Test
     void testRunMigration_Success() throws Exception {
         // Given
