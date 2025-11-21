@@ -16,8 +16,8 @@ services:
     depends_on:
       - postgres
     volumes:
-      - ./db/changelog:/liquibase/changelog
-      - ./liquibase.properties:/liquibase/liquibase.properties
+      - ./src/main/resources/db/changelog:/liquibase/changelog
+      - ./src/main/resources/liquibase.properties:/liquibase/liquibase.properties
     working_dir: /liquibase/changelog
     command: --defaults-file=liquibase.properties update
 
