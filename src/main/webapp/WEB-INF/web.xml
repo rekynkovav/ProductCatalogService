@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app>
+
+    <display-name>Product Catalog Service</display-name>
+
+    <servlet>
+        <servlet-name>version</servlet-name>
+        <servlet-class>org.example.servlet.VersionServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>version</servlet-name>
+        <url-pattern>/version</url-pattern>
+    </servlet-mapping>
+</web-app>
