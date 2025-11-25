@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <changeSet id="create-user-metrics-sequence" author="Y_Lab_student">
+        <createSequence
+                sequenceName="user_metrics_seq"
+                schemaName="service"
+                startValue="1"
+                incrementBy="1"
+                cacheSize="100"/>
+    </changeSet>
+
+    <changeSet id="create-user-metrics-table" author="Y_Lab_student">
+        <createTable tableName="user_metrics" schemaName="entity">
+            <column name="id" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"
+                             foreignKeyName="fk_metrics_user"
+                             references="entity.users(id)"/>
+            </column>
+            <column name="metric_type" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="value" type="INTEGER" defaultValue="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_date" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_date" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+
+        <sql>ALTER TABLE entity.user_metrics ALTER COLUMN id SET DEFAULT nextval('service.user_metrics_seq')</sql>
+
+        <addUniqueConstraint
+                tableName="user_metrics"
+                schemaName="entity"
+                columnNames="user_id, metric_type"
+                constraintName="uk_user_metric_type"/>
+    </changeSet>
+</databaseChangeLog>

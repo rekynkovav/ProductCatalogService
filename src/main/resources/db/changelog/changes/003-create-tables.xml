@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <!-- Таблица пользователей -->
+    <changeSet id="create-user-table" author="Y_Lab_student">
+        <createTable tableName="users" schemaName="entity">
+            <column name="id" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_name" type="VARCHAR(100)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="password" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+
+        <!-- Добавьте отдельный changeset для установки default значения -->
+        <sql>ALTER TABLE entity.users ALTER COLUMN id SET DEFAULT nextval('service.user_id_seq')</sql>
+    </changeSet>
+
+    <!-- Таблица продуктов -->
+    <changeSet id="create-product-table" author="Y_Lab_student">
+        <createTable tableName="products" schemaName="entity">
+            <column name="id" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="quantity" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="price" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="category" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+
+        <sql>ALTER TABLE entity.products ALTER COLUMN id SET DEFAULT nextval('service.product_id_seq')</sql>
+    </changeSet>
+
+    <!-- Таблица корзины -->
+    <changeSet id="create-basket-table" author="Y_Lab_student">
+        <createTable tableName="user_basket" schemaName="entity">
+            <column name="id" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"
+                             foreignKeyName="fk_basket_user"
+                             references="entity.users(id)"/>
+            </column>
+            <column name="product_id" type="BIGINT">
+                <constraints nullable="false"
+                             foreignKeyName="fk_basket_product"
+                             references="entity.products(id)"/>
+            </column>
+            <column name="quantity" type="INTEGER" defaultValue="1">
+                <constraints nullable="false"/>
+            </column>
+            <column name="added_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <sql>ALTER TABLE entity.user_basket ALTER COLUMN id SET DEFAULT nextval('service.basket_item_seq')</sql>
+
+        <addUniqueConstraint
+                tableName="user_basket"
+                schemaName="entity"
+                columnNames="user_id, product_id"
+                constraintName="uk_user_product"/>
+    </changeSet>
+</databaseChangeLog>
