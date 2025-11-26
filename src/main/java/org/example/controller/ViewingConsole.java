@@ -1,6 +1,11 @@
 package org.example.controller;
 
-import org.example.config.impl.UserSecurityConfigImpl;
+import org.example.context.ApplicationContext;
+import org.example.service.MetricsService;
+import org.example.service.ProductService;
+import org.example.service.SecurityService;
+import org.example.service.UserService;
+import org.example.service.impl.SecurityServiceImpl;
 import org.example.model.entity.Category;
 import org.example.model.entity.Product;
 import org.example.model.entity.Role;
@@ -9,6 +14,7 @@ import org.example.service.impl.MetricsServiceImpl;
 import org.example.service.impl.ProductServiceImpl;
 import org.example.service.impl.UserServiceImpl;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -29,20 +35,20 @@ public class ViewingConsole {
     private User currentUser;
     private Scanner scanner;
 
-    private ProductServiceImpl productService;
-    private UserServiceImpl userService;
-    private UserSecurityConfigImpl userSecurityConfig;
-    private MetricsServiceImpl metricsService;
+    private final ProductService productService;
+    private final UserService userService;
+    private final SecurityService userSecurityConfig;
+    private final MetricsService metricsService;
 
     /**
      * Конструктор класса ViewingConsole
-     * Инициализирует сервисы и Scanner для работы с консолью
+     * Инициализирует Scanner для работы с консолью
      */
-    public ViewingConsole() {
-        productService = ProductServiceImpl.getInstance();
-        userService = UserServiceImpl.getInstance();
-        userSecurityConfig = UserSecurityConfigImpl.getInstance();
-        metricsService = MetricsServiceImpl.getInstance();
+    public ViewingConsole(ProductService productService, UserService userService, SecurityService userSecurityConfig, MetricsService metricsService) {
+        this.productService = productService;
+        this.userService = userService;
+        this.userSecurityConfig = userSecurityConfig;
+        this.metricsService = metricsService;
         scanner = new Scanner(System.in);
     }
 
@@ -140,7 +146,7 @@ public class ViewingConsole {
         int input = Integer.parseInt(scanner.nextLine());
         switch (input) {
             case 1:
-                productService.showAllProduct();
+                showProductsWithPagination();
                 userBar();
                 break;
             case 2:
@@ -271,7 +277,7 @@ public class ViewingConsole {
                 deleteProduct();
                 adminBar();
             case 4:
-                productService.showAllProduct();
+                showProductsWithPagination();
                 adminBar();
                 break;
             case 5:
@@ -287,6 +293,49 @@ public class ViewingConsole {
             default:
                 System.out.println("Неверный ввод. Попробуйте снова.");
                 adminBar();
+        }
+    }
+
+    /**
+     * Показывает товары с поддержкой пагинации
+     */
+    private void showProductsWithPagination() {
+        int currentPage = 0;
+        boolean viewingProducts = true;
+        List<Product> productList = productService.showAllProduct(currentPage);
+        if (productList.size() <= 20) {
+            viewingProducts = false;
+        }
+        while (viewingProducts) {
+            if (productList.isEmpty()) {
+                viewingProducts = false;
+                continue;
+            }
+
+            System.out.println("Для возврата в меню введите: 'back'");
+            String navigation = scanner.nextLine().toLowerCase();
+
+            switch (navigation) {
+                case "next":
+                    if (currentPage < productService.getTotalPages() - 1) {
+                        currentPage++;
+                    } else {
+                        System.out.println("Это последняя страница.");
+                    }
+                    break;
+                case "prev":
+                    if (currentPage > 0) {
+                        currentPage--;
+                    } else {
+                        System.out.println("Это первая страница.");
+                    }
+                    break;
+                case "back":
+                    viewingProducts = false;
+                    break;
+                default:
+                    System.out.println("Неверная команда. Используйте 'next', 'prev' или 'back'.");
+            }
         }
     }
 

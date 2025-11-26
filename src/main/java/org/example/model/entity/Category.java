@@ -7,42 +7,7 @@ package org.example.model.entity;
 public enum Category {
 
     /**
-     * Электроника
+     * Электроника, Одежда, Продукты питания, Книги, Образование, Спорт, Дом, Другое
      */
-    ELECTRONICS,
-
-    /**
-     * Одежда
-     */
-    CLOTHING,
-
-    /**
-     * Продукты питания
-     */
-    FOOD,
-
-    /**
-     * Книги
-     */
-    BOOKS,
-
-    /**
-     * Образование
-     */
-    EDUCATION,
-
-    /**
-     * Спорт
-     */
-    SPORTS,
-
-    /**
-     * Дом
-     */
-    HOME,
-
-    /**
-     * Другое
-     */
-    OTHER
+    ELECTRONICS, CLOTHING, FOOD, BOOKS, EDUCATION, SPORTS, HOME, OTHER
 }

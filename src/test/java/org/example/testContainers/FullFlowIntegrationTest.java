@@ -1,7 +1,8 @@
 package org.example.testContainers;
 
 import org.example.config.ConnectionManager;
-import org.example.config.impl.UserSecurityConfigImpl;
+import org.example.context.ApplicationContext;
+import org.example.service.impl.SecurityServiceImpl;
 import org.example.model.entity.Category;
 import org.example.model.entity.Product;
 import org.example.model.entity.Role;
@@ -23,18 +24,20 @@ class FullFlowIntegrationTest extends BaseDatabaseTest {
 
     private UserServiceImpl userService;
     private ProductServiceImpl productService;
-    private UserSecurityConfigImpl userSecurityConfig;
+    private SecurityServiceImpl SecurityConfig;
     private MetricsServiceImpl metricsService;
+    private ConnectionManager connectionManager;
 
     @BeforeEach
     void setUp() {
         // Очищаем базу данных перед каждым тестом
         cleanupDatabase();
 
-        userService = UserServiceImpl.getInstance();
-        productService = ProductServiceImpl.getInstance();
-        userSecurityConfig = UserSecurityConfigImpl.getInstance();
-        metricsService = MetricsServiceImpl.getInstance();
+        connectionManager = ApplicationContext.getInstance().getBean(ConnectionManager.class);
+        userService = ApplicationContext.getInstance().getBean(UserServiceImpl.class);
+        productService = ApplicationContext.getInstance().getBean(ProductServiceImpl.class);
+        SecurityConfig = ApplicationContext.getInstance().getBean(SecurityServiceImpl.class);
+        metricsService = ApplicationContext.getInstance().getBean(MetricsServiceImpl.class);
     }
 
     @Test
@@ -55,7 +58,7 @@ class FullFlowIntegrationTest extends BaseDatabaseTest {
         productService.saveProduct(product);
 
         // 3. Аутентификация
-        boolean authResult = userSecurityConfig.verificationUser("integrationuser", "password");
+        boolean authResult = SecurityConfig.verificationUser("integrationuser", "password");
         assertThat(authResult).isTrue();
 
         // 4. Добавление в корзину
@@ -90,7 +93,7 @@ class FullFlowIntegrationTest extends BaseDatabaseTest {
         userService.saveUser(admin);
 
         // 2. Аутентификация
-        userSecurityConfig.verificationUser("adminuser", "adminpass");
+        SecurityConfig.verificationUser("adminuser", "adminpass");
 
         // 3. Создание товара через сервис
         Product product = new Product();
@@ -185,7 +188,7 @@ class FullFlowIntegrationTest extends BaseDatabaseTest {
      * Метод для очистки всех таблиц в базе данных
      */
     private void cleanupDatabase() {
-        try (Connection connection = ConnectionManager.getInstance().getConnection();
+        try (Connection connection = connectionManager.getConnection();
              Statement statement = connection.createStatement()) {
 
             // Очищаем все таблицы в правильном порядке
@@ -202,7 +205,7 @@ class FullFlowIntegrationTest extends BaseDatabaseTest {
 
         } catch (SQLException e) {
             // Если TRUNCATE не работает, используем DELETE
-            try (Connection connection = ConnectionManager.getInstance().getConnection();
+            try (Connection connection = connectionManager.getConnection();
                  Statement statement = connection.createStatement()) {
 
                 statement.execute("DELETE FROM entity.user_metrics");

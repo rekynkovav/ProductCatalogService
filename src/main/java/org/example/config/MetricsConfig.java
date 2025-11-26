@@ -5,6 +5,8 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.Metrics;
+import org.example.context.ApplicationContext;
+import org.example.repository.MetricsRepository;
 import org.example.repository.impl.MetricsRepositoryImpl;
 
 import java.util.Map;
@@ -31,9 +33,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @see MetricsRepositoryImpl
  */
 public class MetricsConfig {
-    private static MetricsConfig instance;
+
     private final MeterRegistry registry;
-    private final MetricsRepositoryImpl metricsRepository;
+    private final MetricsRepository metricsRepository;
 
     // Основные счетчики
     private final Counter userLoginCounter;
@@ -57,9 +59,9 @@ public class MetricsConfig {
      * Приватный конструктор для инициализации всех метрик.
      * Создает счетчики, таймеры и gauges для мониторинга приложения.
      */
-    private MetricsConfig() {
-        this.registry = Metrics.globalRegistry;
-        this.metricsRepository = MetricsRepositoryImpl.getInstance();
+    public MetricsConfig(MetricsRepository metricsRepository) {
+        registry = Metrics.globalRegistry;
+        this.metricsRepository  = metricsRepository;
 
         // Инициализируем счетчики
         userLoginCounter = Counter.builder("app.user.login.total")
@@ -108,18 +110,6 @@ public class MetricsConfig {
                 .register(registry);
 
         initializeGauges();
-    }
-
-    /**
-     * Возвращает единственный экземпляр MetricsConfig (реализация Singleton).
-     *
-     * @return единственный экземпляр MetricsConfig
-     */
-    public static synchronized MetricsConfig getInstance() {
-        if (instance == null) {
-            instance = new MetricsConfig();
-        }
-        return instance;
     }
 
     /**
@@ -172,26 +162,10 @@ public class MetricsConfig {
     }
 
     /**
-     * Устанавливает количество активных пользователей.
-     *
-     * @param count количество активных пользователей
-     */
-    public void setActiveUsers(int count) {
-        activeUsersGauge.set(count);
-    }
-
-    /**
      * Увеличивает счетчик активных пользователей на 1.
      */
     public void incrementActiveUsers() {
         activeUsersGauge.incrementAndGet();
-    }
-
-    /**
-     * Уменьшает счетчик активных пользователей на 1.
-     */
-    public void decrementActiveUsers() {
-        activeUsersGauge.decrementAndGet();
     }
 
     // Геттеры для основных метрик
@@ -293,14 +267,5 @@ public class MetricsConfig {
      */
     public Timer getProductOperationTimer() {
         return productOperationTimer;
-    }
-
-    /**
-     * Устанавливает экземпляр MetricsConfig (используется для тестирования).
-     *
-     * @param instance экземпляр MetricsConfig для установки
-     */
-    public static void setInstance(MetricsConfig instance) {
-        MetricsConfig.instance = instance;
     }
 }

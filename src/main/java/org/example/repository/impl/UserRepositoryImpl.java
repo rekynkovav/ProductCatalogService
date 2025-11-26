@@ -5,6 +5,7 @@ import org.example.config.MetricsConfig;
 import org.example.model.entity.Product;
 import org.example.model.entity.Role;
 import org.example.model.entity.User;
+import org.example.repository.ProductRepository;
 import org.example.repository.UserRepository;
 
 import java.sql.Connection;
@@ -23,35 +24,16 @@ import java.util.Optional;
  * Реализует паттерн Singleton.
  */
 public class UserRepositoryImpl implements UserRepository {
+    private final MetricsConfig metricsConfig;
+    private final ConnectionManager connectionManager;
+    private final ProductRepository productRepository;
 
-    /**
-     * Единственный экземпляр репозитория пользователей.
-     */
-    private static UserRepositoryImpl instance;
-
-    /**
-     * Репозиторий продуктов для работы с корзиной пользователя.
-     */
-    private ProductRepositoryImpl productRepository;
-
-    /**
-     * Возвращает единственный экземпляр репозитория пользователей.
-     *
-     * @return экземпляр UserRepositoryImpl
-     */
-    public static synchronized UserRepositoryImpl getInstance() {
-        if (instance == null) {
-            instance = new UserRepositoryImpl();
-        }
-        return instance;
-    }
-
-    /**
-     * Приватный конструктор для реализации паттерна Singleton.
-     * Инициализирует зависимость от репозитория продуктов.
-     */
-    private UserRepositoryImpl() {
-        productRepository = ProductRepositoryImpl.getInstance();
+    public UserRepositoryImpl(ConnectionManager connectionManager,
+                              MetricsConfig metricsConfig,
+                              ProductRepository productRepository) {
+        this.connectionManager = connectionManager;
+        this.metricsConfig = metricsConfig;
+        this.productRepository = productRepository;
     }
 
     /**
@@ -62,7 +44,7 @@ public class UserRepositoryImpl implements UserRepository {
     public User save(User user) {
         String sql = "INSERT INTO entity.users (user_name, password, role) VALUES (?, ?, ?)";
 
-        try (Connection connection = ConnectionManager.getInstance().getConnection();
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             preparedStatement.setString(1, user.getUserName());
@@ -78,7 +60,7 @@ public class UserRepositoryImpl implements UserRepository {
                 }
             }
         } catch (SQLException e) {
-            MetricsConfig.getInstance().getDatabaseErrorCounter().increment();
+            metricsConfig.getDatabaseErrorCounter().increment();
             throw new RuntimeException("Error saving user", e);
         }
         return user;
@@ -92,18 +74,18 @@ public class UserRepositoryImpl implements UserRepository {
     public Optional<User> findById(Long id) {
         String sql = "SELECT * FROM entity.users WHERE id = ?";
 
-        try (Connection connection = ConnectionManager.getInstance().getConnection();
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
             preparedStatement.setLong(1, id);
             ResultSet resultSet = preparedStatement.executeQuery();
-
             if (resultSet.next()) {
                 User user = mapResultSetToUser(resultSet);
                 user.setMapBasket(getBasket(user.getId()));
                 return Optional.of(user);
             }
         } catch (SQLException e) {
-            MetricsConfig.getInstance().getDatabaseErrorCounter().increment();
+            metricsConfig.getDatabaseErrorCounter().increment();
             throw new RuntimeException("Error finding user by id", e);
         }
         return Optional.empty();
@@ -117,18 +99,18 @@ public class UserRepositoryImpl implements UserRepository {
     public Optional<User> findByUsername(String username) {
         String sql = "SELECT * FROM entity.users WHERE user_name = ?";
 
-        try (Connection connection = ConnectionManager.getInstance().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (Connection connection = connectionManager.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
             preparedStatement.setString(1, username);
             ResultSet resultSet = preparedStatement.executeQuery();
-
             if (resultSet.next()) {
                 User user = mapResultSetToUser(resultSet);
                 user.setMapBasket(getBasket(user.getId()));
                 return Optional.of(user);
             }
         } catch (SQLException e) {
-            MetricsConfig.getInstance().getDatabaseErrorCounter().increment();
+            metricsConfig.getDatabaseErrorCounter().increment();
             throw new RuntimeException("Error finding user by username", e);
         }
         return Optional.empty();
@@ -141,16 +123,16 @@ public class UserRepositoryImpl implements UserRepository {
     public boolean existsByUsername(String username) {
         String sql = "SELECT COUNT(*) FROM entity.users WHERE user_name = ?";
 
-        try (Connection connection = ConnectionManager.getInstance().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (Connection connection = connectionManager.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
             preparedStatement.setString(1, username);
             ResultSet resultSet = preparedStatement.executeQuery();
-
             if (resultSet.next()) {
                 return resultSet.getInt(1) > 0;
             }
         } catch (SQLException e) {
-            MetricsConfig.getInstance().getDatabaseErrorCounter().increment();
+            metricsConfig.getDatabaseErrorCounter().increment();
             throw new RuntimeException("Error checking user existence", e);
         }
         return false;
@@ -165,15 +147,15 @@ public class UserRepositoryImpl implements UserRepository {
         List<User> listUser = new ArrayList<>();
         String sql = "SELECT * FROM entity.users ORDER BY id";
 
-        try (Connection connection = ConnectionManager.getInstance().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            ResultSet resultSet = preparedStatement.executeQuery();
+        try (Connection connection = connectionManager.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
+            ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 listUser.add(mapResultSetToUser(resultSet));
             }
         } catch (SQLException e) {
-            MetricsConfig.getInstance().getDatabaseErrorCounter().increment();
+            metricsConfig.getDatabaseErrorCounter().increment();
             throw new RuntimeException("Error finding all products", e);
         }
         return listUser;
@@ -188,12 +170,13 @@ public class UserRepositoryImpl implements UserRepository {
         clearBasket(id);
         String sql = "DELETE FROM entity.users WHERE id = ?";
 
-        try (Connection connection = ConnectionManager.getInstance().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (Connection connection = connectionManager.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
             preparedStatement.setLong(1, id);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            MetricsConfig.getInstance().getDatabaseErrorCounter().increment();
+            metricsConfig.getDatabaseErrorCounter().increment();
             throw new RuntimeException("Error deleting user", e);
         }
     }
@@ -213,18 +196,18 @@ public class UserRepositoryImpl implements UserRepository {
                      "JOIN entity.products p ON ub.product_id = p.id " +
                      "WHERE ub.user_id = ?";
 
-        try (Connection connection = ConnectionManager.getInstance().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (Connection connection = connectionManager.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
             preparedStatement.setLong(1, userId);
             ResultSet resultSet = preparedStatement.executeQuery();
-
             while (resultSet.next()) {
                 Product product = productRepository.mapResultSetToProduct(resultSet);
                 product.setQuantity(resultSet.getInt("basket_quantity"));
                 basket.put(product.getId(), product);
             }
         } catch (SQLException e) {
-            MetricsConfig.getInstance().getDatabaseErrorCounter().increment();
+            metricsConfig.getDatabaseErrorCounter().increment();
             throw new RuntimeException("Error loading basket from database", e);
         }
         return basket;
@@ -233,8 +216,10 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public void deleteAllUser() {
         String sql = "DELETE FROM entity.users";
-        try (Connection connection = ConnectionManager.getInstance().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
+        try (Connection connection = connectionManager.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException("Error deleting all users", e);
@@ -253,17 +238,15 @@ public class UserRepositoryImpl implements UserRepository {
                 "ON CONFLICT (user_id, product_id) " +
                 "DO UPDATE SET quantity = EXCLUDED.quantity, added_at = CURRENT_TIMESTAMP";
 
-        try (Connection connection = ConnectionManager.getInstance().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (Connection connection = connectionManager.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             preparedStatement.setLong(1, userId);
             preparedStatement.setLong(2, productId);
             preparedStatement.setInt(3, quantity);
-
             preparedStatement.executeUpdate();
-
         } catch (SQLException e) {
-            MetricsConfig.getInstance().getDatabaseErrorCounter().increment();
+            metricsConfig.getDatabaseErrorCounter().increment();
             throw new RuntimeException("Error adding product to basket", e);
         }
     }
@@ -275,15 +258,14 @@ public class UserRepositoryImpl implements UserRepository {
     public void removeFromBasket(Long userId, Long productId) {
         String sql = "DELETE FROM entity.user_basket WHERE user_id = ? AND product_id = ?";
 
-        try (Connection connection = ConnectionManager.getInstance().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (Connection connection = connectionManager.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             preparedStatement.setLong(1, userId);
             preparedStatement.setLong(2, productId);
-
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            MetricsConfig.getInstance().getDatabaseErrorCounter().increment();
+            metricsConfig.getDatabaseErrorCounter().increment();
             throw new RuntimeException("Error removing product from basket", e);
         }
     }
@@ -295,12 +277,13 @@ public class UserRepositoryImpl implements UserRepository {
     public void clearBasket(Long userId) {
         String sql = "DELETE FROM entity.user_basket WHERE user_id = ?";
 
-        try (Connection connection = ConnectionManager.getInstance().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (Connection connection = connectionManager.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
             preparedStatement.setLong(1, userId);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            MetricsConfig.getInstance().getDatabaseErrorCounter().increment();
+            metricsConfig.getDatabaseErrorCounter().increment();
             throw new RuntimeException("Error clearing basket", e);
         }
     }
@@ -321,7 +304,4 @@ public class UserRepositoryImpl implements UserRepository {
         user.setRole(Role.valueOf(resultSet.getString("role")));
         return user;
     }
-
-
-
 }

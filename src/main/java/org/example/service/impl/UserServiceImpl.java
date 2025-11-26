@@ -2,7 +2,7 @@ package org.example.service.impl;
 
 import org.example.model.entity.Product;
 import org.example.model.entity.User;
-import org.example.repository.impl.UserRepositoryImpl;
+import org.example.repository.UserRepository;
 import org.example.service.UserService;
 
 import java.util.List;
@@ -15,34 +15,11 @@ import java.util.Optional;
  * Реализует паттерн Singleton.
  */
 public class UserServiceImpl implements UserService {
-    /**
-     * Единственный экземпляр сервиса пользователей.
-     */
-    private static UserServiceImpl instance;
 
-    /**
-     * Репозиторий для работы с данными пользователей.
-     */
-    private UserRepositoryImpl userRepository;
+    private final UserRepository userRepository;
 
-    /**
-     * Возвращает единственный экземпляр сервиса пользователей.
-     *
-     * @return экземпляр UserServiceImpl
-     */
-    public static synchronized UserServiceImpl getInstance() {
-        if (instance == null) {
-            instance = new UserServiceImpl();
-        }
-        return instance;
-    }
-
-    /**
-     * Приватный конструктор для реализации паттерна Singleton.
-     * Инициализирует репозиторий пользователей.
-     */
-    private UserServiceImpl() {
-        userRepository = UserRepositoryImpl.getInstance();
+    public UserServiceImpl(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     /**

@@ -1,6 +1,7 @@
 package org.example.testContainers;
 
 import org.example.config.ConnectionManager;
+import org.example.context.ApplicationContext;
 import org.example.model.entity.Role;
 import org.example.model.entity.User;
 import org.example.service.impl.MetricsServiceImpl;
@@ -17,8 +18,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class MetricsServiceImplTest extends BaseDatabaseTest {
 
-    private MetricsServiceImpl metricsService = MetricsServiceImpl.getInstance();
-    private UserServiceImpl userService = UserServiceImpl.getInstance();
+    private MetricsServiceImpl metricsService = ApplicationContext.getInstance().getBean(MetricsServiceImpl.class);
+    private UserServiceImpl userService = ApplicationContext.getInstance().getBean(UserServiceImpl.class);
+    private ConnectionManager connectionManager = ApplicationContext.getInstance().getBean(ConnectionManager.class);
     private User testUser;
 
     @BeforeEach
@@ -134,7 +136,7 @@ class MetricsServiceImplTest extends BaseDatabaseTest {
      * Метод для очистки всех таблиц в базе данных с использованием TRUNCATE CASCADE для PostgreSQL
      */
     private void cleanupDatabase() {
-        try (Connection connection = ConnectionManager.getInstance().getConnection();
+        try (Connection connection = connectionManager.getConnection();
              Statement statement = connection.createStatement()) {
 
             // Отключаем проверки внешних ключей для PostgreSQL

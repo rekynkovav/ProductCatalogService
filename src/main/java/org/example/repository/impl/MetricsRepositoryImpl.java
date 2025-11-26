@@ -1,6 +1,7 @@
 package org.example.repository.impl;
 
 import org.example.config.ConnectionManager;
+import org.example.context.ApplicationContext;
 import org.example.repository.MetricsRepository;
 
 import java.sql.Connection;
@@ -21,26 +22,10 @@ import java.util.Map;
  */
 
 public class MetricsRepositoryImpl implements MetricsRepository {
+    private final ConnectionManager connectionManager;
 
-    private static MetricsRepositoryImpl instance;
-
-    /**
-     * Возвращает единственный экземпляр MetricsRepositoryImpl.
-     * Реализует потокобезопасный Singleton pattern.
-     *
-     * @return единственный экземпляр MetricsRepositoryImpl
-     */
-    public static synchronized MetricsRepositoryImpl getInstance() {
-        if (instance == null) {
-            instance = new MetricsRepositoryImpl();
-        }
-        return instance;
-    }
-
-    /**
-     * Приватный конструктор для предотвращения прямого создания экземпляров.
-     */
-    private MetricsRepositoryImpl() {
+    public MetricsRepositoryImpl(ConnectionManager connectionManager) {
+        this.connectionManager = connectionManager;
     }
 
     /**
@@ -57,8 +42,9 @@ public class MetricsRepositoryImpl implements MetricsRepository {
                      "ON CONFLICT (user_id, metric_type) DO UPDATE SET value = user_metrics.value + 1, " +
                      "updated_date = CURRENT_TIMESTAMP";
 
-        try (Connection connection = ConnectionManager.getInstance().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (Connection connection = connectionManager.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)){
+
             preparedStatement.setLong(1, userId);
             preparedStatement.setString(2, metricType);
             preparedStatement.executeUpdate();
@@ -79,16 +65,16 @@ public class MetricsRepositoryImpl implements MetricsRepository {
     public int getMetricValue(Long userId, String metricType) {
         String sql = "SELECT value FROM entity.user_metrics WHERE user_id = ? AND metric_type = ?";
 
-        try (Connection connection = ConnectionManager.getInstance().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (Connection connection = connectionManager.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)){
+
             preparedStatement.setLong(1, userId);
             preparedStatement.setString(2, metricType);
             ResultSet resultSet = preparedStatement.executeQuery();
-
             if (resultSet.next()) {
                 return resultSet.getInt("value");
             }
-            return 0; // Если записи нет, возвращаем 0
+            return 0;
         } catch (SQLException e) {
             throw new RuntimeException("Error getting metric value: " + metricType, e);
         }
@@ -106,11 +92,11 @@ public class MetricsRepositoryImpl implements MetricsRepository {
         Map<String, Integer> metrics = new HashMap<>();
         String sql = "SELECT metric_type, value FROM entity.user_metrics WHERE user_id = ?";
 
-        try (Connection connection = ConnectionManager.getInstance().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (Connection connection = connectionManager.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)){
+
             preparedStatement.setLong(1, userId);
             ResultSet resultSet = preparedStatement.executeQuery();
-
             while (resultSet.next()) {
                 metrics.put(resultSet.getString("metric_type"), resultSet.getInt("value"));
             }
@@ -132,10 +118,10 @@ public class MetricsRepositoryImpl implements MetricsRepository {
         Map<String, Integer> metrics = new HashMap<>();
         String sql = "SELECT metric_type, SUM(value) as total_value FROM entity.user_metrics GROUP BY metric_type";
 
-        try (Connection connection = ConnectionManager.getInstance().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            ResultSet resultSet = preparedStatement.executeQuery();
+        try (Connection connection = connectionManager.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)){
 
+            ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 metrics.put(resultSet.getString("metric_type"), resultSet.getInt("total_value"));
             }
@@ -153,8 +139,10 @@ public class MetricsRepositoryImpl implements MetricsRepository {
     @Override
     public void deleteAllMetrics() {
         String sql = "DELETE FROM entity.user_metrics";
-        try (Connection connection = ConnectionManager.getInstance().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
+        try (Connection connection = connectionManager.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)){
+
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException("Error deleting all user metrics", e);
@@ -170,8 +158,10 @@ public class MetricsRepositoryImpl implements MetricsRepository {
     @Override
     public void deleteUserMetricsById(Long userId) {
         String sql = "DELETE FROM entity.user_metrics WHERE user_id = ?";
-        try (Connection connection = ConnectionManager.getInstance().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
+        try (Connection connection = connectionManager.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)){
+
             preparedStatement.setLong(1, userId);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {

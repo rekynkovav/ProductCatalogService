@@ -1,6 +1,8 @@
 package org.example.service.impl;
 
 import org.example.model.entity.User;
+import org.example.repository.MetricsRepository;
+import org.example.repository.UserRepository;
 import org.example.repository.impl.MetricsRepositoryImpl;
 import org.example.repository.impl.UserRepositoryImpl;
 import org.example.service.MetricsService;
@@ -32,12 +34,13 @@ import java.util.Optional;
  * @see UserRepositoryImpl
  */
 public class MetricsServiceImpl implements MetricsService {
+    private final MetricsRepository metricsRepository;
+    private final UserRepository userRepository;
 
-    private static MetricsServiceImpl instance;
-    private final MetricsRepositoryImpl metricsRepository;
-    private final UserRepositoryImpl userRepository;
-
-    // Константы для типов метрик
+    public MetricsServiceImpl(MetricsRepository metricsRepository, UserRepository userRepository) {
+        this.metricsRepository = metricsRepository;
+        this.userRepository = userRepository;
+    }
 
     /**
      * Тип метрики: количество входов в систему
@@ -78,28 +81,6 @@ public class MetricsServiceImpl implements MetricsService {
      * Тип метрики: общее количество пользователей
      */
     public static final String TOTAL_USERS = "TOTAL_USERS";
-
-    /**
-     * Возвращает единственный экземпляр сервиса метрик.
-     * Реализует ленивую инициализацию Singleton.
-     *
-     * @return единственный экземпляр MetricsServiceImpl
-     */
-    public static synchronized MetricsServiceImpl getInstance() {
-        if (instance == null) {
-            instance = new MetricsServiceImpl();
-        }
-        return instance;
-    }
-
-    /**
-     * Приватный конструктор для реализации паттерна Singleton.
-     * Инициализирует репозитории для работы с метриками и пользователями.
-     */
-    private MetricsServiceImpl() {
-        this.metricsRepository = MetricsRepositoryImpl.getInstance();
-        this.userRepository = UserRepositoryImpl.getInstance();
-    }
 
     /**
      * Увеличивает значение метрики пользователя на 1.
@@ -311,6 +292,7 @@ public class MetricsServiceImpl implements MetricsService {
      *
      * @return форматированная строка со статистикой активности всех пользователей
      */
+    @Override
     public String getFormattedMetrics() {
         List<User> allUsers = userRepository.findAllUser();
         if (allUsers.isEmpty()) {

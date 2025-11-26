@@ -1,9 +1,11 @@
 package org.example.testContainers;
 
+import org.example.context.ApplicationContext;
 import org.example.model.entity.Category;
 import org.example.model.entity.Product;
 import org.example.repository.impl.ProductRepositoryImpl;
 import org.example.service.impl.ProductServiceImpl;
+import org.example.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -14,8 +16,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class ProductServiceImplTest extends BaseDatabaseTest {
 
-    private ProductServiceImpl productService = ProductServiceImpl.getInstance();
-    private ProductRepositoryImpl productRepository = ProductRepositoryImpl.getInstance();
+    private ProductServiceImpl productService = ApplicationContext.getInstance().getBean(ProductServiceImpl.class);
+    private ProductRepositoryImpl productRepository = ApplicationContext.getInstance().getBean(ProductRepositoryImpl.class);
 
     @BeforeEach
     void setUp() {

@@ -1,9 +1,9 @@
 package org.example.testContainers;
 
 import org.example.config.ConnectionManager;
+import org.example.context.ApplicationContext;
 import org.example.model.entity.Role;
 import org.example.model.entity.User;
-import org.example.repository.impl.MetricsRepositoryImpl;
 import org.example.repository.impl.UserRepositoryImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,16 +15,15 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
 class UserRepositoryImplTest extends BaseDatabaseTest {
 
-    private UserRepositoryImpl userRepository = UserRepositoryImpl.getInstance();
-    private MetricsRepositoryImpl userMetricsRepository = MetricsRepositoryImpl.getInstance();
+    private UserRepositoryImpl userRepository = ApplicationContext.getInstance().getBean(UserRepositoryImpl.class);
+    private ConnectionManager connectionManager = ApplicationContext.getInstance().getBean(ConnectionManager.class);
 
     @BeforeEach
     void setUp() {
         String sql = "TRUNCATE TABLE entity.user_metrics, entity.users CASCADE";
-        try (Connection connection = ConnectionManager.getInstance().getConnection();
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.executeUpdate();
         } catch (SQLException e) {

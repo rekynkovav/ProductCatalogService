@@ -1,5 +1,6 @@
 package org.example.testContainers;
 
+import org.example.context.ApplicationContext;
 import org.example.repository.impl.MetricsRepositoryImpl;
 import org.example.repository.impl.UserRepositoryImpl;
 import org.junit.jupiter.api.AfterAll;
@@ -20,8 +21,8 @@ public abstract class BaseDatabaseTest {
     protected static Connection connection;
     protected static Statement statement;
 
-    protected static UserRepositoryImpl userRepository = UserRepositoryImpl.getInstance();
-    protected static MetricsRepositoryImpl metricsRepository = MetricsRepositoryImpl.getInstance();
+    protected static UserRepositoryImpl userRepository = ApplicationContext.getInstance().getBean(UserRepositoryImpl.class);
+    protected static MetricsRepositoryImpl metricsRepository = ApplicationContext.getInstance().getBean(MetricsRepositoryImpl.class);
 
     @Container
     protected static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15-alpine")

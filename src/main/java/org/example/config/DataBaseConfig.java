@@ -17,33 +17,15 @@ public class DataBaseConfig {
 
     /**
      * Статический блок инициализации конфигурации.
-     * Загружает настройки из файла или устанавливает значения по умолчанию.
+     * Загружает настройки из liquibase.properties.
      */
     static {
         try (InputStream inputStream = DataBaseConfig.class.getClassLoader()
                 .getResourceAsStream("liquibase.properties")) {
-            if (inputStream == null) {
-                setDefaultProperties();
-            } else {
-                properties.load(inputStream);
-            }
+            properties.load(inputStream);
         } catch (IOException e) {
             System.err.println("IOException for load liquibase.properties");
-            setDefaultProperties();
         }
-    }
-
-    /**
-     * Устанавливает значения свойств по умолчанию.
-     * Используется когда файл конфигурации не найден.
-     */
-    private static void setDefaultProperties() {
-        properties.setProperty("database.url", "jdbc:postgresql://localhost:5432/postgres?currentSchema=entity,service");
-        properties.setProperty("database.username", "postgres");
-        properties.setProperty("database.password", "postgres");
-        properties.setProperty("database.driver", "org.postgresql.Driver");
-        properties.setProperty("liquibase.enabled", "true");
-        properties.setProperty("liquibase.change-log", "db/changelog/db.changelog-master.xml");
     }
 
     /**

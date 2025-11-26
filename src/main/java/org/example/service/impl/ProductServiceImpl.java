@@ -1,12 +1,16 @@
 package org.example.service.impl;
 
 import org.example.config.MetricsConfig;
-import org.example.config.impl.UserSecurityConfigImpl;
+import org.example.context.ApplicationContext;
 import org.example.model.entity.Category;
 import org.example.model.entity.Product;
+import org.example.repository.ProductRepository;
+import org.example.repository.UserRepository;
 import org.example.repository.impl.ProductRepositoryImpl;
 import org.example.repository.impl.UserRepositoryImpl;
+import org.example.service.MetricsService;
 import org.example.service.ProductService;
+import org.example.service.SecurityService;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,54 +24,19 @@ import java.util.concurrent.TimeUnit;
  */
 public class ProductServiceImpl implements ProductService {
 
-    /**
-     * Единственный экземпляр сервиса товаров.
-     */
-    private static ProductServiceImpl instance;
 
-    /**
-     * Сервис безопасности пользователей.
-     */
-    private UserSecurityConfigImpl userSecurityService;
+    private final SecurityService securityService;
+    private final UserRepository userRepository;
+    private final MetricsConfig metricsConfig;
+    private final ProductRepository productRepository;
+    private final MetricsService metricsService;
 
-    /**
-     * Репозиторий товаров.
-     */
-    private ProductRepositoryImpl productRepository;
-
-    /**
-     * Репозиторий пользователей.
-     */
-    private UserRepositoryImpl userRepository;
-
-    /**
-     * Конфигурация метрик для сбора статистики.
-     */
-    private MetricsConfig metricsConfig;
-    private MetricsServiceImpl metricsService;
-
-    /**
-     * Возвращает единственный экземпляр сервиса товаров.
-     *
-     * @return экземпляр ProductServiceImpl
-     */
-    public static synchronized ProductServiceImpl getInstance() {
-        if (instance == null) {
-            instance = new ProductServiceImpl();
-        }
-        return instance;
-    }
-
-    /**
-     * Приватный конструктор для реализации паттерна Singleton.
-     * Инициализирует зависимости от других сервисов и репозиториев.
-     */
-    private ProductServiceImpl() {
-        userSecurityService = UserSecurityConfigImpl.getInstance();
-        productRepository = ProductRepositoryImpl.getInstance();
-        userRepository = UserRepositoryImpl.getInstance();
-        metricsConfig = MetricsConfig.getInstance();
-        metricsService = MetricsServiceImpl.getInstance();
+    public ProductServiceImpl(SecurityService securityService, UserRepository userRepository, MetricsConfig metricsConfig, ProductRepository productRepository, MetricsService metricsService) {
+        this.securityService = securityService;
+        this.userRepository = userRepository;
+        this.metricsConfig = metricsConfig;
+        this.productRepository = productRepository;
+        this.metricsService = metricsService;
     }
 
     /**
@@ -83,8 +52,8 @@ public class ProductServiceImpl implements ProductService {
             productRepository.save(product);
 
             // Сохраняем метрики в БД
-            if (userSecurityService.isAuthenticated()) {
-                Long userId = userSecurityService.getThisUser().getId();
+            if (securityService.isAuthenticated()) {
+                Long userId = securityService.getThisUser().getId();
                 metricsService.incrementMetric(userId, "PRODUCT_ADD_COUNT");
             }
 
@@ -150,28 +119,6 @@ public class ProductServiceImpl implements ProductService {
             long duration = System.currentTimeMillis() - startTime;
             metricsConfig.getProductOperationTimer().record(duration, TimeUnit.MILLISECONDS);
         }
-    }
-
-    /**
-     * Отображает все товары в магазине.
-     * Выводит список в консоль.
-     */
-    @Override
-    public List<Product> showAllProduct() {
-        List<Product> productList = productRepository.findAll();
-        if (!productList.isEmpty()) {
-            for (Product product : productList) {
-                System.out.println(product.getId() + " "
-                                   + product.getName() + " цена: "
-                                   + product.getPrice() + " доступно: "
-                                   + product.getQuantity() + " шт. Категория: "
-                                   + product.getCategory());
-            }
-        } else {
-            System.out.println("товаров нет в наличии");
-        }
-        System.out.println();
-        return productList;
     }
 
     /**
@@ -245,5 +192,57 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<Product> findByName(String nameProduct) {
         return productRepository.findByName(nameProduct);
+    }
+
+    @Override
+    public List<Product> showAllProduct(int page) {
+        List<Product> productList = productRepository.findAll(page);
+        displayProducts(productList, page);
+        return productList;
+    }
+
+    @Override
+    public int getTotalPages() {
+        int totalProducts = productRepository.getTotalProductsCount();
+        return (int) Math.ceil((double) totalProducts / ProductRepositoryImpl.PAGE_SIZE);
+    }
+    /**
+     * Отображает все товары в магазине с пагинацией.
+     * Выводит список в консоль.
+     */
+    @Override
+    public List<Product> showAllProduct() {
+        return showAllProduct(0); // По умолчанию показываем первую страницу
+    }
+
+    /**
+     * Вспомогательный метод для отображения товаров с информацией о пагинации
+     */
+    private void displayProducts(List<Product> productList, int currentPage) {
+        if (!productList.isEmpty()) {
+            System.out.println("=== Страница " + (currentPage + 1) + " ===" + "\n");
+            for (Product product : productList) {
+                System.out.println(product.getId() + " "
+                                   + product.getName() + " цена: "
+                                   + product.getPrice() + " доступно: "
+                                   + product.getQuantity() + " шт. Категория: "
+                                   + product.getCategory());
+            }
+
+            // Показываем информацию о пагинации
+            int totalPages = getTotalPages();
+            System.out.println("\n--- Страница " + (currentPage + 1) + " из " + totalPages + " ---");
+            if (currentPage > 0) {
+                System.out.print("Для предыдущей страницы введите: 'prev'");
+            }
+            if (currentPage < totalPages - 1) {
+                if (currentPage > 0) System.out.print(" | ");
+                System.out.print("Для следующей страницы введите: 'next'");
+            }
+            System.out.println();
+        } else {
+            System.out.println("товаров нет в наличии");
+        }
+        System.out.println();
     }
 }

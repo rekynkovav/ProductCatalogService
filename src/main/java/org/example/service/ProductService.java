@@ -84,4 +84,7 @@ public interface ProductService {
      * @return Optional с найденным товаром или empty если товар не найден
      */
     List<Product> findByName(String nameProduct);
+
+    List<Product> showAllProduct(int page);
+    int getTotalPages();
 }
