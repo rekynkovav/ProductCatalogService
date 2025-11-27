@@ -14,7 +14,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class MetricsRepositoryImplTest extends BaseDatabaseTest {
+class AspectRepositoryImplTest extends BaseDatabaseTest {
 
     private ConnectionManager connectionManager = ApplicationContext.getInstance().getBean(ConnectionManager.class);
     private User testUser;

@@ -1,20 +1,19 @@
 package org.example.context;
 
+import org.example.aspect.AuditAspect;
+import org.example.aspect.LoggingAspect;
 import org.example.config.ConnectionManager;
 import org.example.config.LiquibaseMigration;
-import org.example.config.MetricsConfig;
-import org.example.controller.ViewingConsole;
-import org.example.repository.MetricsRepository;
+import org.example.aspect.MetricsAspect;
+import org.example.repository.AspectRepository;
 import org.example.repository.ProductRepository;
 import org.example.repository.UserRepository;
-import org.example.repository.impl.MetricsRepositoryImpl;
+import org.example.repository.impl.AspectRepositoryImpl;
 import org.example.repository.impl.ProductRepositoryImpl;
 import org.example.repository.impl.UserRepositoryImpl;
-import org.example.service.MetricsService;
 import org.example.service.ProductService;
 import org.example.service.SecurityService;
 import org.example.service.UserService;
-import org.example.service.impl.MetricsServiceImpl;
 import org.example.service.impl.ProductServiceImpl;
 import org.example.service.impl.SecurityServiceImpl;
 import org.example.service.impl.UserServiceImpl;
@@ -46,35 +45,35 @@ public class ApplicationContext {
             ConnectionManager connectionManager = new ConnectionManager();
             registerBean(ConnectionManager.class, connectionManager);
 
-            MetricsRepository metricsRepository = new MetricsRepositoryImpl(connectionManager);
-            registerBean(MetricsRepository.class, metricsRepository);
+            AspectRepository aspectRepository = new AspectRepositoryImpl(connectionManager);
+            registerBean(AspectRepository.class, aspectRepository);
 
-            MetricsConfig metricsConfig = new MetricsConfig(metricsRepository);
-            registerBean(MetricsConfig.class, metricsConfig);
+            AuditAspect auditAspect = new AuditAspect(aspectRepository);
+            registerBean(AuditAspect.class, auditAspect);
 
-            ProductRepository productRepository = new ProductRepositoryImpl(connectionManager, metricsConfig);
+            ProductRepository productRepository = new ProductRepositoryImpl(connectionManager);
             registerBean(ProductRepository.class, productRepository);
 
-            UserRepository userRepository = new UserRepositoryImpl(connectionManager, metricsConfig, productRepository);
+            UserRepository userRepository = new UserRepositoryImpl(connectionManager, productRepository);
             registerBean(UserRepository.class, userRepository);
 
             UserService userService = new UserServiceImpl(userRepository);
             registerBean(UserService.class, userService);
 
-            MetricsService metricsService = new MetricsServiceImpl(metricsRepository, userRepository);
-            registerBean(MetricsService.class, metricsService);
-
-            SecurityService securityService = new SecurityServiceImpl(userService, metricsConfig, metricsService);
+            SecurityService securityService = new SecurityServiceImpl(userService);
             registerBean(SecurityService.class, securityService);
 
-            ProductService productService = new ProductServiceImpl(securityService, userRepository, metricsConfig, productRepository, metricsService);
+            ProductService productService = new ProductServiceImpl( userRepository, productRepository);
             registerBean(ProductService.class, productService);
 
             LiquibaseMigration liquibaseMigration = new LiquibaseMigration(connectionManager);
             registerBean(LiquibaseMigration.class, liquibaseMigration);
 
-            ViewingConsole viewingConsole = new ViewingConsole(productService, userService, securityService, metricsService);
-            registerBean(ViewingConsole.class, viewingConsole);
+            LoggingAspect loggingAspect = new LoggingAspect();
+            registerBean(LoggingAspect.class, loggingAspect);
+
+            MetricsAspect metricsAspect = new MetricsAspect(userService);
+            registerBean(MetricsAspect.class, metricsAspect);
         } catch (Exception e) {
             throw new RuntimeException("Failed to initialize application context", e);
         }

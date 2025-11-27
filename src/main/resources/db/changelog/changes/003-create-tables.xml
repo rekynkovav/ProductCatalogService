@@ -11,7 +11,7 @@
             <column name="id" type="BIGINT">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="user_name" type="VARCHAR(100)">
+            <column name="username" type="VARCHAR(100)">
                 <constraints nullable="false" unique="true"/>
             </column>
             <column name="password" type="VARCHAR(255)">
@@ -23,10 +23,8 @@
             <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
                 <constraints nullable="false"/>
             </column>
-            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
         </createTable>
 
-        <!-- Добавьте отдельный changeset для установки default значения -->
         <sql>ALTER TABLE entity.users ALTER COLUMN id SET DEFAULT nextval('service.user_id_seq')</sql>
     </changeSet>
 
@@ -42,7 +40,7 @@
             <column name="quantity" type="INTEGER">
                 <constraints nullable="false"/>
             </column>
-            <column name="price" type="INTEGER">
+            <column name="price" type="DOUBLE PRECISION">
                 <constraints nullable="false"/>
             </column>
             <column name="category" type="VARCHAR(100)">
@@ -51,27 +49,25 @@
             <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
                 <constraints nullable="false"/>
             </column>
-            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
         </createTable>
 
         <sql>ALTER TABLE entity.products ALTER COLUMN id SET DEFAULT nextval('service.product_id_seq')</sql>
     </changeSet>
 
-    <!-- Таблица корзины -->
-    <changeSet id="create-basket-table" author="Y_Lab_student">
+    <!-- Таблица корзины (упрощенная - многие ко многим) -->
+    <changeSet id="create-user-basket-table" author="Y_Lab_student">
         <createTable tableName="user_basket" schemaName="entity">
-            <column name="id" type="BIGINT">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
             <column name="user_id" type="BIGINT">
                 <constraints nullable="false"
                              foreignKeyName="fk_basket_user"
-                             references="entity.users(id)"/>
+                             references="entity.users(id)"
+                             deleteCascade="true"/>
             </column>
             <column name="product_id" type="BIGINT">
                 <constraints nullable="false"
                              foreignKeyName="fk_basket_product"
-                             references="entity.products(id)"/>
+                             references="entity.products(id)"
+                             deleteCascade="true"/>
             </column>
             <column name="quantity" type="INTEGER" defaultValue="1">
                 <constraints nullable="false"/>
@@ -81,12 +77,51 @@
             </column>
         </createTable>
 
-        <sql>ALTER TABLE entity.user_basket ALTER COLUMN id SET DEFAULT nextval('service.basket_item_seq')</sql>
+        <addPrimaryKey tableName="user_basket" columnNames="user_id, product_id" constraintName="pk_user_basket"/>
+    </changeSet>
 
-        <addUniqueConstraint
-                tableName="user_basket"
-                schemaName="entity"
-                columnNames="user_id, product_id"
-                constraintName="uk_user_product"/>
+    <!-- Таблица аудита -->
+    <changeSet id="create-audit-logs-table" author="Y_Lab_student">
+        <createTable tableName="audit_logs" schemaName="entity">
+            <column name="id" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="true"
+                             foreignKeyName="fk_audit_user"
+                             references="entity.users(id)"/>
+            </column>
+            <column name="action" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="timestamp" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <sql>ALTER TABLE entity.audit_logs ALTER COLUMN id SET DEFAULT nextval('service.audit_logs_seq')</sql>
+    </changeSet>
+
+    <!-- Таблица метрик -->
+    <changeSet id="create-user-metrics-table" author="Y_Lab_student">
+        <createTable tableName="user_metrics" schemaName="entity">
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"
+                             foreignKeyName="fk_metrics_user"
+                             references="entity.users(id)"
+                             deleteCascade="true"/>
+            </column>
+            <column name="metric_type" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="value" type="INTEGER" defaultValue="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_date" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey tableName="user_metrics" columnNames="user_id, metric_type" constraintName="pk_user_metrics"/>
     </changeSet>
 </databaseChangeLog>

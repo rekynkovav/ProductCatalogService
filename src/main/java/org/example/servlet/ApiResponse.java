@@ -1,7 +1,10 @@
-package org.example.model.dto;
+package org.example.servlet;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-
+/**
+ * Универсальный класс для стандартизированных API-ответов.
+ * Обеспечивает единый формат ответов для всех эндпоинтов API.
+ */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiResponse<T> {
     private boolean success;
@@ -22,6 +25,12 @@ public class ApiResponse<T> {
         this.success = success;
         this.message = message;
         this.error = error;
+    }
+
+    public ApiResponse(boolean success, String message) {
+
+        this.success = success;
+        this.message = message;
     }
 
     public static <T> ApiResponse<T> success(T data) {

@@ -1,8 +1,6 @@
 package org.example.repository.impl;
 
 import org.example.config.ConnectionManager;
-import org.example.config.MetricsConfig;
-import org.example.context.ApplicationContext;
 import org.example.model.entity.Category;
 import org.example.model.entity.Product;
 import org.example.repository.ProductRepository;
@@ -25,11 +23,9 @@ public class ProductRepositoryImpl implements ProductRepository {
     // Константа для размера страницы пагинации
     public static final int PAGE_SIZE = 20;
     private final ConnectionManager connectionManager;
-    private final MetricsConfig metricsConfig;
 
-    public ProductRepositoryImpl(ConnectionManager connectionManager, MetricsConfig metricsConfig) {
+    public ProductRepositoryImpl(ConnectionManager connectionManager) {
         this.connectionManager = connectionManager;
-        this.metricsConfig = metricsConfig;
     }
     /**
      * {@inheritDoc}
@@ -208,7 +204,6 @@ public class ProductRepositoryImpl implements ProductRepository {
             preparedStatement.setLong(2, productId);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            metricsConfig.getDatabaseErrorCounter().increment();
             throw new RuntimeException("Error removing product from basket", e);
         }
     }

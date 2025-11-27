@@ -23,12 +23,12 @@
                 cacheSize="50"/>
     </changeSet>
 
-    <changeSet id="create-basket-seq" author="Y_Lab_student">
+    <changeSet id="create-audit-logs-seq" author="Y_Lab_student">
         <createSequence
-                sequenceName="basket_item_seq"
+                sequenceName="audit_logs_seq"
                 schemaName="service"
                 startValue="1"
                 incrementBy="1"
-                cacheSize="100"/>
+                cacheSize="1000"/>
     </changeSet>
 </databaseChangeLog>

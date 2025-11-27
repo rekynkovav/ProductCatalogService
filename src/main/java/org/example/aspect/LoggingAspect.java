@@ -6,7 +6,11 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+/**
+ * Аспект для логирования времени выполнения методов сервисов и сервлетов.
+ * Записывает в лог информацию о начале и окончании выполнения методов,
+ * а также об ошибках с указанием времени выполнения.
+ */
 @Aspect
 public class LoggingAspect {
     private static final Logger logger = LoggerFactory.getLogger(LoggingAspect.class);

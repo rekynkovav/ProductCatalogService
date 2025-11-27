@@ -1,8 +1,7 @@
 package org.example.repository.impl;
 
 import org.example.config.ConnectionManager;
-import org.example.context.ApplicationContext;
-import org.example.repository.MetricsRepository;
+import org.example.repository.AspectRepository;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -17,14 +16,14 @@ import java.util.Map;
  *
  * <p>Класс реализует шаблон Singleton для обеспечения единственного экземпляра репозитория.</p>
  *
- * @see org.example.repository.MetricsRepository
+ * @see AspectRepository
  * @see org.example.config.ConnectionManager
  */
 
-public class MetricsRepositoryImpl implements MetricsRepository {
+public class AspectRepositoryImpl implements AspectRepository {
     private final ConnectionManager connectionManager;
 
-    public MetricsRepositoryImpl(ConnectionManager connectionManager) {
+    public AspectRepositoryImpl(ConnectionManager connectionManager) {
         this.connectionManager = connectionManager;
     }
 
@@ -166,6 +165,53 @@ public class MetricsRepositoryImpl implements MetricsRepository {
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException("Error deleting user metrics", e);
+        }
+    }
+    /**
+     * Сохраняет запись аудита в базу данных
+     *
+     * @param userId ID пользователя (может быть null для анонимных действий)
+     * @param username имя пользователя
+     * @param action выполненное действие
+     * @param clientIp IP адрес клиента
+     * @param status выполнения (SUCCESS, ERROR)
+     * @param executionTime время выполнения в миллисекундах
+     * @param errorMessage сообщение об ошибке (если есть)
+     */
+    @Override
+    public void saveAuditLog(Long userId, String username, String action, String clientIp,
+                             String status, Long executionTime, String errorMessage) {
+        String sql = """
+            INSERT INTO entity.audit_logs (user_id, username, action, client_ip, status, execution_time_ms, error_message)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """;
+
+        try (Connection connection = connectionManager.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(sql)) {
+
+            // Устанавливаем параметры
+            if (userId != null) {
+                stmt.setLong(1, userId);
+            } else {
+                stmt.setNull(1, java.sql.Types.BIGINT);
+            }
+            stmt.setString(2, username != null ? username : "anonymous");
+            stmt.setString(3, action);
+            stmt.setString(4, clientIp != null ? clientIp : "unknown");
+            stmt.setString(5, status);
+
+            if (executionTime != null) {
+                stmt.setLong(6, executionTime);
+            } else {
+                stmt.setNull(6, java.sql.Types.BIGINT);
+            }
+
+            stmt.setString(7, errorMessage);
+
+            stmt.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error saving audit log for action: " + action, e);
         }
     }
 }

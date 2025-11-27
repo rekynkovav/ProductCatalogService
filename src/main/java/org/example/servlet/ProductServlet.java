@@ -10,7 +10,6 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.ValidatorFactory;
 import org.example.context.ApplicationContext;
-import org.example.model.dto.ApiResponse;
 import org.example.model.dto.ProductDTO;
 import org.example.model.dto.ProductMapper;
 import org.example.model.entity.Product;
@@ -22,32 +21,41 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-@WebServlet("/api/products/*")
+/**
+ * Специализированный сервлет для управления товарами через REST API.
+ * Обеспечивает CRUD операции для товаров с валидацией данных.
+ */
+@WebServlet("api/products/*")
 public class ProductServlet extends HttpServlet {
     private ProductService productService;
     private ObjectMapper objectMapper;
     private Validator validator;
+    private ValidatorFactory validatorFactory;
 
     @Override
     public void init() throws ServletException {
         this.productService = ApplicationContext.getInstance().getBean(ProductService.class);
         this.objectMapper = new ObjectMapper();
 
-        try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
-            this.validator = factory.getValidator();
+        validatorFactory = Validation.buildDefaultValidatorFactory();
+        validator = validatorFactory.getValidator();
+
+    }
+
+    @Override
+    public void destroy() {
+        if (validatorFactory != null) {
+            validatorFactory.close();
         }
     }
 
     @Override
-    public void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
 
         try {
             String pathInfo = request.getPathInfo();
-
             if (pathInfo == null || pathInfo.equals("/")) {
                 // GET /api/products - получить все продукты
                 List<ProductDTO> products = ProductMapper.INSTANCE.productsToProductDTOs(
@@ -65,10 +73,12 @@ public class ProductServlet extends HttpServlet {
                         Product product = optionalProduct.get();
                         ProductDTO productDTO = ProductMapper.INSTANCE.productToProductDTO(product);
                         sendSuccessResponse(response, productDTO);
+                    } else {
+                        // Обработка случая, когда продукт не найден
+                        sendErrorResponse(response, HttpServletResponse.SC_NOT_FOUND, "Product not found with id: " + productId);
                     }
                 } else {
-                    sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST,
-                            "Invalid URL format");
+                    sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid URL format");
                 }
             }
         } catch (NumberFormatException e) {
@@ -81,15 +91,12 @@ public class ProductServlet extends HttpServlet {
     }
 
     @Override
-    public void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+    public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
 
         try {
             ProductDTO productDTO = objectMapper.readValue(request.getInputStream(), ProductDTO.class);
-
-            // Валидация DTO
             Set<ConstraintViolation<ProductDTO>> violations = validator.validate(productDTO);
             if (!violations.isEmpty()) {
                 String errorMessage = violations.stream()
@@ -109,11 +116,9 @@ public class ProductServlet extends HttpServlet {
             sendSuccessResponse(response, "Product created successfully", savedProduct);
 
         } catch (IOException e) {
-            sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST,
-                    "Invalid JSON format");
+            sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid JSON format");
         } catch (Exception e) {
-            sendErrorResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    "Error creating product: " + e.getMessage());
+            sendErrorResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error creating product: " + e.getMessage());
         }
     }
 
@@ -154,24 +159,19 @@ public class ProductServlet extends HttpServlet {
             if (updatedProduct != null) {
                 sendSuccessResponse(response, "Product updated successfully", updatedProduct);
             } else {
-                sendErrorResponse(response, HttpServletResponse.SC_NOT_FOUND,
-                        "Product not found with id: " + productId);
+                sendErrorResponse(response, HttpServletResponse.SC_NOT_FOUND, "Product not found with id: " + productId);
             }
-
         } catch (NumberFormatException e) {
-            sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST,
-                    "Invalid product ID format");
+            sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid product ID format");
         } catch (IOException e) {
-            sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST,
-                    "Invalid JSON format");
+            sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid JSON format");
         } catch (Exception e) {
-            sendErrorResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    "Error updating product: " + e.getMessage());
+            sendErrorResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error updating product: " + e.getMessage());
         }
     }
 
     @Override
-    protected void doDelete(HttpServletRequest request, HttpServletResponse response)
+    public void doDelete(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
@@ -179,8 +179,7 @@ public class ProductServlet extends HttpServlet {
         try {
             String pathInfo = request.getPathInfo();
             if (pathInfo == null || pathInfo.split("/").length != 2) {
-                sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST,
-                        "Product ID is required");
+                sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST, "Product ID is required");
                 return;
             }
 
@@ -190,16 +189,12 @@ public class ProductServlet extends HttpServlet {
             if (deleted) {
                 sendSuccessResponse(response, "Product deleted successfully", null);
             } else {
-                sendErrorResponse(response, HttpServletResponse.SC_NOT_FOUND,
-                        "Product not found with id: " + productId);
+                sendErrorResponse(response, HttpServletResponse.SC_NOT_FOUND, "Product not found with id: " + productId);
             }
-
         } catch (NumberFormatException e) {
-            sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST,
-                    "Invalid product ID format");
+            sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST,"Invalid product ID format");
         } catch (Exception e) {
-            sendErrorResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-                    "Error deleting product: " + e.getMessage());
+            sendErrorResponse(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,"Error deleting product: " + e.getMessage());
         }
     }
 

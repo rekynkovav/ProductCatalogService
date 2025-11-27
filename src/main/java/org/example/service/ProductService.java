@@ -23,11 +23,6 @@ public interface ProductService {
     /**
      * Обновляет информацию о существующем товаре.
      *
-     * @param id       идентификатор товара
-     * @param name     новое название товара
-     * @param quantity новое количество товара
-     * @param price    новая цена товара
-     * @param category новая категория товара
      * @return
      */
     Product updateProduct(Product product);
@@ -49,8 +44,9 @@ public interface ProductService {
      * Ищет товары по категории и отображает результаты.
      *
      * @param category категория для поиска
+     * @return
      */
-    void searchCategory(Category category);
+    List<Product> searchCategory(Category category);
 
     /**
      * Добавляет товар в корзину пользователя.

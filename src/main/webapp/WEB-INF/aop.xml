@@ -1,0 +1,13 @@
+<aspectj>
+    <weaver>
+        <include within="org.example.servlet..*"/>
+        <include within="org.example.service..*"/>
+        <include within="org.example.aspect..*"/>
+    </weaver>
+
+    <aspects>
+        <aspect name="org.example.aspect.LoggingAspect"/>
+        <aspect name="org.example.aspect.AuditAspect"/>
+        <aspect name="org.example.aspect.MetricsAspect"/>
+    </aspects>
+</aspectj>

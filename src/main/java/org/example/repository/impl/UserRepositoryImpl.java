@@ -1,7 +1,6 @@
 package org.example.repository.impl;
 
 import org.example.config.ConnectionManager;
-import org.example.config.MetricsConfig;
 import org.example.model.entity.Product;
 import org.example.model.entity.Role;
 import org.example.model.entity.User;
@@ -24,15 +23,12 @@ import java.util.Optional;
  * Реализует паттерн Singleton.
  */
 public class UserRepositoryImpl implements UserRepository {
-    private final MetricsConfig metricsConfig;
     private final ConnectionManager connectionManager;
     private final ProductRepository productRepository;
 
     public UserRepositoryImpl(ConnectionManager connectionManager,
-                              MetricsConfig metricsConfig,
                               ProductRepository productRepository) {
         this.connectionManager = connectionManager;
-        this.metricsConfig = metricsConfig;
         this.productRepository = productRepository;
     }
 
@@ -60,7 +56,6 @@ public class UserRepositoryImpl implements UserRepository {
                 }
             }
         } catch (SQLException e) {
-            metricsConfig.getDatabaseErrorCounter().increment();
             throw new RuntimeException("Error saving user", e);
         }
         return user;
@@ -85,7 +80,6 @@ public class UserRepositoryImpl implements UserRepository {
                 return Optional.of(user);
             }
         } catch (SQLException e) {
-            metricsConfig.getDatabaseErrorCounter().increment();
             throw new RuntimeException("Error finding user by id", e);
         }
         return Optional.empty();
@@ -110,7 +104,6 @@ public class UserRepositoryImpl implements UserRepository {
                 return Optional.of(user);
             }
         } catch (SQLException e) {
-            metricsConfig.getDatabaseErrorCounter().increment();
             throw new RuntimeException("Error finding user by username", e);
         }
         return Optional.empty();
@@ -132,7 +125,6 @@ public class UserRepositoryImpl implements UserRepository {
                 return resultSet.getInt(1) > 0;
             }
         } catch (SQLException e) {
-            metricsConfig.getDatabaseErrorCounter().increment();
             throw new RuntimeException("Error checking user existence", e);
         }
         return false;
@@ -155,7 +147,6 @@ public class UserRepositoryImpl implements UserRepository {
                 listUser.add(mapResultSetToUser(resultSet));
             }
         } catch (SQLException e) {
-            metricsConfig.getDatabaseErrorCounter().increment();
             throw new RuntimeException("Error finding all products", e);
         }
         return listUser;
@@ -176,7 +167,6 @@ public class UserRepositoryImpl implements UserRepository {
             preparedStatement.setLong(1, id);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            metricsConfig.getDatabaseErrorCounter().increment();
             throw new RuntimeException("Error deleting user", e);
         }
     }
@@ -207,7 +197,6 @@ public class UserRepositoryImpl implements UserRepository {
                 basket.put(product.getId(), product);
             }
         } catch (SQLException e) {
-            metricsConfig.getDatabaseErrorCounter().increment();
             throw new RuntimeException("Error loading basket from database", e);
         }
         return basket;
@@ -246,7 +235,6 @@ public class UserRepositoryImpl implements UserRepository {
             preparedStatement.setInt(3, quantity);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            metricsConfig.getDatabaseErrorCounter().increment();
             throw new RuntimeException("Error adding product to basket", e);
         }
     }
@@ -265,7 +253,6 @@ public class UserRepositoryImpl implements UserRepository {
             preparedStatement.setLong(2, productId);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            metricsConfig.getDatabaseErrorCounter().increment();
             throw new RuntimeException("Error removing product from basket", e);
         }
     }
@@ -283,7 +270,6 @@ public class UserRepositoryImpl implements UserRepository {
             preparedStatement.setLong(1, userId);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            metricsConfig.getDatabaseErrorCounter().increment();
             throw new RuntimeException("Error clearing basket", e);
         }
     }
