@@ -46,7 +46,7 @@ class ProductServiceImplTest extends BaseDatabaseTest {
         Product savedProduct = productRepository.save(product);
 
         // When
-        productService.updateProduct(savedProduct.getId(), "New Name", 10, 100, Category.ELECTRONICS);
+        productService.updateProduct(product);
 
         // Then
         Optional<Product> updatedProduct = productService.findById(savedProduct.getId());

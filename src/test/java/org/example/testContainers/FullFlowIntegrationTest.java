@@ -104,7 +104,7 @@ class FullFlowIntegrationTest extends BaseDatabaseTest {
         productService.saveProduct(product);
 
         // 4. Обновление товара
-        productService.updateProduct(product.getId(), "Updated Product", 10, 150, Category.ELECTRONICS);
+        productService.updateProduct(product);
 
         // 5. Удаление товара
         productService.deleteProductById(product.getId());

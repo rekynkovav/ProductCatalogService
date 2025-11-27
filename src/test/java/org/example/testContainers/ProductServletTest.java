@@ -1,5 +1,7 @@
 package org.example.testContainers;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.example.model.dto.ProductDTO;
 import org.example.service.ProductService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,9 +11,11 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.math.BigDecimal;
 
 import static org.mockito.Mockito.*;
@@ -80,9 +84,8 @@ public class ProductServletTest {
         productDTO.setCategory("Test Category");
 
         String jsonRequest = objectMapper.writeValueAsString(productDTO);
-        when(request.getInputStream()).thenReturn(
-                new MockServletInputStream(new ByteArrayInputStream(jsonRequest.getBytes()))
-        );
+        extracted(jsonRequest);
+
 
         StringWriter stringWriter = new StringWriter();
         PrintWriter writer = new PrintWriter(stringWriter);
@@ -97,6 +100,11 @@ public class ProductServletTest {
         assert stringWriter.toString().contains("Product created successfully");
     }
 
+    private void extracted(String jsonRequest) throws IOException {
+        BufferedReader reader = new BufferedReader(new StringReader(jsonRequest));
+        when(request.getReader()).thenReturn(reader);
+    }
+
     @Test
     public void testDoPostInvalidProduct() throws Exception {
         // Given
@@ -105,9 +113,7 @@ public class ProductServletTest {
 
         ProductDTO productDTO = new ProductDTO(); // Невалидный продукт
         String jsonRequest = objectMapper.writeValueAsString(productDTO);
-        when(request.getInputStream()).thenReturn(
-                new MockServletInputStream(new ByteArrayInputStream(jsonRequest.getBytes()))
-        );
+        extracted(jsonRequest);
 
         StringWriter stringWriter = new StringWriter();
         PrintWriter writer = new PrintWriter(stringWriter);
@@ -120,38 +126,5 @@ public class ProductServletTest {
         verify(response).setStatus(HttpServletResponse.SC_BAD_REQUEST);
         writer.flush();
         assert stringWriter.toString().contains("error");
-    }
-
-    // Вспомогательный класс для мока InputStream
-    private static class MockServletInputStream extends ServletInputStream {
-        private final InputStream inputStream;
-
-        public MockServletInputStream(InputStream inputStream) {
-            this.inputStream = inputStream;
-        }
-
-        @Override
-        public int read() throws IOException {
-            return inputStream.read();
-        }
-
-        @Override
-        public boolean isFinished() {
-            try {
-                return inputStream.available() == 0;
-            } catch (IOException e) {
-                return true;
-            }
-        }
-
-        @Override
-        public boolean isReady() {
-            return true;
-        }
-
-        @Override
-        public void setReadListener(ReadListener readListener) {
-            // Not implemented for tests
-        }
     }
 }

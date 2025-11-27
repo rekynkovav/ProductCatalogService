@@ -16,8 +16,9 @@ public interface ProductService {
      * Сохраняет новый товар в магазине.
      *
      * @param product товар для сохранения
+     * @return
      */
-    void saveProduct(Product product);
+    Product saveProduct(Product product);
 
     /**
      * Обновляет информацию о существующем товаре.
@@ -27,21 +28,22 @@ public interface ProductService {
      * @param quantity новое количество товара
      * @param price    новая цена товара
      * @param category новая категория товара
+     * @return
      */
-    void updateProduct(long id, String name, int quantity, int price, Category category);
+    Product updateProduct(Product product);
 
     /**
      * Удаляет товар по идентификатору.
      *
      * @param id идентификатор товара для удаления
      */
-    void deleteProductById(long id);
+    boolean deleteProductById(long id);
 
     /**
      * Отображает все товары в магазине.
      * Выводит список в консоль.
      */
-    List<Product> showAllProduct();
+    List<Product> getAllProduct();
 
     /**
      * Ищет товары по категории и отображает результаты.
@@ -85,6 +87,6 @@ public interface ProductService {
      */
     List<Product> findByName(String nameProduct);
 
-    List<Product> showAllProduct(int page);
+    List<Product> getAllProduct(int page);
     int getTotalPages();
 }

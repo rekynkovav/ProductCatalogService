@@ -1,13 +1,11 @@
 package org.example.service.impl;
 
 import org.example.config.MetricsConfig;
-import org.example.context.ApplicationContext;
 import org.example.model.entity.Category;
 import org.example.model.entity.Product;
 import org.example.repository.ProductRepository;
 import org.example.repository.UserRepository;
 import org.example.repository.impl.ProductRepositoryImpl;
-import org.example.repository.impl.UserRepositoryImpl;
 import org.example.service.MetricsService;
 import org.example.service.ProductService;
 import org.example.service.SecurityService;
@@ -44,9 +42,10 @@ public class ProductServiceImpl implements ProductService {
      * Собирает метрики добавления товаров.
      *
      * @param product товар для сохранения
+     * @return
      */
     @Override
-    public void saveProduct(Product product) {
+    public Product saveProduct(Product product) {
         long startTime = System.currentTimeMillis();
         try {
             productRepository.save(product);
@@ -63,6 +62,7 @@ public class ProductServiceImpl implements ProductService {
             long duration = System.currentTimeMillis() - startTime;
             metricsConfig.getProductOperationTimer().record(duration, TimeUnit.MILLISECONDS);
         }
+        return product;
     }
 
     /**
@@ -74,30 +74,32 @@ public class ProductServiceImpl implements ProductService {
      * @param quantity новое количество товара
      * @param price    новая цена товара
      * @param category новая категория товара
+     * @return
      * @throws RuntimeException если товар с указанным идентификатором не найден
      */
     @Override
-    public void updateProduct(long id, String name, int quantity, int price, Category category) {
+    public Product updateProduct(Product product) {
         long startTime = System.currentTimeMillis();
         try {
-            Optional<Product> productOptional = productRepository.findById(id);
+            Optional<Product> productOptional = productRepository.findById(product.getId());
             if (productOptional.isPresent()) {
-                Product product = productOptional.get();
-                product.setName(name);
-                product.setQuantity(quantity);
-                product.setPrice(price);
-                product.setCategory(category);
-                productRepository.update(product);
+                Product newProduct = productOptional.get();
+                newProduct.setName(product.getName());
+                newProduct.setQuantity(product.getQuantity());
+                newProduct.setPrice(product.getPrice());
+                newProduct.setCategory(product.getCategory());
+                productRepository.update(newProduct);
 
                 // Micrometer метрики
                 metricsConfig.getProductUpdateCounter().increment();
             } else {
-                throw new RuntimeException("Product not found with id: " + id);
+                throw new RuntimeException("Product not found with id: " + product.getId());
             }
         } finally {
             long duration = System.currentTimeMillis() - startTime;
             metricsConfig.getProductOperationTimer().record(duration, TimeUnit.MILLISECONDS);
         }
+        return product;
     }
 
     /**
@@ -107,13 +109,12 @@ public class ProductServiceImpl implements ProductService {
      * @param id идентификатор товара для удаления
      */
     @Override
-    public void deleteProductById(long id) {
+    public boolean deleteProductById(long id) {
         long startTime = System.currentTimeMillis();
         try {
             productRepository.deleteById(id);
-
-            // Micrometer метрики
             metricsConfig.getProductDeleteCounter().increment();
+            return true;
 
         } finally {
             long duration = System.currentTimeMillis() - startTime;
@@ -195,7 +196,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<Product> showAllProduct(int page) {
+    public List<Product> getAllProduct(int page) {
         List<Product> productList = productRepository.findAll(page);
         displayProducts(productList, page);
         return productList;
@@ -211,8 +212,8 @@ public class ProductServiceImpl implements ProductService {
      * Выводит список в консоль.
      */
     @Override
-    public List<Product> showAllProduct() {
-        return showAllProduct(0); // По умолчанию показываем первую страницу
+    public List<Product> getAllProduct() {
+        return getAllProduct(0); // По умолчанию показываем первую страницу
     }
 
     /**

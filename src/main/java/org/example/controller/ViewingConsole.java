@@ -1,18 +1,14 @@
 package org.example.controller;
 
-import org.example.context.ApplicationContext;
 import org.example.service.MetricsService;
 import org.example.service.ProductService;
 import org.example.service.SecurityService;
 import org.example.service.UserService;
-import org.example.service.impl.SecurityServiceImpl;
 import org.example.model.entity.Category;
 import org.example.model.entity.Product;
 import org.example.model.entity.Role;
 import org.example.model.entity.User;
 import org.example.service.impl.MetricsServiceImpl;
-import org.example.service.impl.ProductServiceImpl;
-import org.example.service.impl.UserServiceImpl;
 
 import java.util.List;
 import java.util.Map;
@@ -302,7 +298,7 @@ public class ViewingConsole {
     private void showProductsWithPagination() {
         int currentPage = 0;
         boolean viewingProducts = true;
-        List<Product> productList = productService.showAllProduct(currentPage);
+        List<Product> productList = productService.getAllProduct(currentPage);
         if (productList.size() <= 20) {
             viewingProducts = false;
         }
@@ -365,7 +361,7 @@ public class ViewingConsole {
      */
     private void deleteProduct() {
         try {
-            productService.showAllProduct();
+            productService.getAllProduct();
             System.out.print("Введите ID товара который хотите удалить: ");
             long id = Long.parseLong(scanner.nextLine());
 
@@ -385,7 +381,7 @@ public class ViewingConsole {
      */
     private void updateProduct() {
         try {
-            productService.showAllProduct();
+            productService.getAllProduct();
             System.out.print("Введите ID товара который хотите изменить: ");
             long id = Long.parseLong(scanner.nextLine());
             System.out.print("Введите новое наименование товара: ");
@@ -399,7 +395,8 @@ public class ViewingConsole {
             String categoryInput = scanner.nextLine().toUpperCase();
 
             Category category = Category.valueOf(categoryInput);
-            productService.updateProduct(id, name, quantity, price, category);
+            Product product = new Product(name, quantity, price, category);
+            productService.updateProduct(product);
 
             User currentUser = userSecurityConfig.getThisUser();
             metricsService.incrementMetric(currentUser.getId(), MetricsServiceImpl.PRODUCT_UPDATE_COUNT);

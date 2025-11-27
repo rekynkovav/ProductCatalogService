@@ -160,16 +160,18 @@ public class ProductRepositoryImpl implements ProductRepository {
      * {@inheritDoc}
      */
     @Override
-    public void deleteById(Long id) {
+    public boolean deleteById(Long id) {
         String sql = "DELETE FROM entity.products WHERE id = ?";
 
         try (Connection connection = connectionManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
             preparedStatement.setLong(1, id);
-            preparedStatement.executeUpdate();
+            int rowsAffected = preparedStatement.executeUpdate();
+            return rowsAffected > 0;
         } catch (SQLException e) {
-            throw new RuntimeException("Error deleting product by id", e);
+
+            return false;
         }
     }
 

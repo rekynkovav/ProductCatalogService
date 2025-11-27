@@ -1,19 +1,25 @@
 package org.example.servlet;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
-import jakarta.validation.Validator;
 import jakarta.validation.ValidatorFactory;
+import org.example.context.ApplicationContext;
+import org.example.model.dto.ApiResponse;
+import org.example.model.dto.ProductDTO;
+import org.example.model.dto.ProductMapper;
+import org.example.model.entity.Product;
 import org.example.service.ProductService;
+import jakarta.validation.Validator;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -25,7 +31,7 @@ public class ProductServlet extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
-        this.productService = new ProductService();
+        this.productService = ApplicationContext.getInstance().getBean(ProductService.class);
         this.objectMapper = new ObjectMapper();
 
         try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
@@ -34,7 +40,7 @@ public class ProductServlet extends HttpServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+    public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
@@ -45,7 +51,7 @@ public class ProductServlet extends HttpServlet {
             if (pathInfo == null || pathInfo.equals("/")) {
                 // GET /api/products - получить все продукты
                 List<ProductDTO> products = ProductMapper.INSTANCE.productsToProductDTOs(
-                        productService.getAllProducts()
+                        productService.getAllProduct()
                 );
                 sendSuccessResponse(response, products);
 
@@ -54,22 +60,17 @@ public class ProductServlet extends HttpServlet {
                 String[] pathParts = pathInfo.split("/");
                 if (pathParts.length == 2) {
                     Long productId = Long.parseLong(pathParts[1]);
-                    ProductDTO product = ProductMapper.INSTANCE.productToProductDTO(
-                            productService.getProductById(productId)
-                    );
-
-                    if (product != null) {
-                        sendSuccessResponse(response, product);
-                    } else {
-                        sendErrorResponse(response, HttpServletResponse.SC_NOT_FOUND,
-                                "Product not found with id: " + productId);
+                    Optional<Product> optionalProduct = productService.findById(productId);
+                    if (optionalProduct.isPresent()) {
+                        Product product = optionalProduct.get();
+                        ProductDTO productDTO = ProductMapper.INSTANCE.productToProductDTO(product);
+                        sendSuccessResponse(response, productDTO);
                     }
                 } else {
                     sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST,
                             "Invalid URL format");
                 }
             }
-
         } catch (NumberFormatException e) {
             sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST,
                     "Invalid product ID format");
@@ -80,7 +81,7 @@ public class ProductServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+    public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
@@ -184,7 +185,7 @@ public class ProductServlet extends HttpServlet {
             }
 
             Long productId = Long.parseLong(pathInfo.split("/")[1]);
-            boolean deleted = productService.deleteProduct(productId);
+            boolean deleted = productService.deleteProductById(productId);
 
             if (deleted) {
                 sendSuccessResponse(response, "Product deleted successfully", null);

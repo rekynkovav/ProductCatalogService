@@ -51,7 +51,7 @@ public interface ProductRepository {
      *
      * @param id идентификатор товара для удаления
      */
-    void deleteById(Long id);
+    boolean deleteById(Long id);
 
     /**
      * Обновляет информацию о товаре.
