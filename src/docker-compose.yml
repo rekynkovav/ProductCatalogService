@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: productcatalog
       POSTGRES_DB: productcatalog
     ports:
-      - "5433:5432"
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -16,10 +16,10 @@ services:
     depends_on:
       - postgres
     volumes:
-    - ./main/resources/db/changelog:/liquibase/changelog
-    - ./main/resources/liquibase.properties:/liquibase/liquibase.properties
+    - ./src/main/resources/db/changelog:/liquibase/changelog
+    - ./src/main/resources/application.yml:/liquibase/application.yml
     working_dir: /resource
-    command: --defaults-file=resource/liquibase.properties update
+    command: --defaults-file=resource/application.yml update
 
 volumes:
   postgres_data:

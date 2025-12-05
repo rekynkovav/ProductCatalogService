@@ -11,12 +11,13 @@ import java.util.Optional;
  * Сервисный интерфейс для управления пользователями
  * Определяет контракт для работы с пользователями, их корзинами и статистикой активности
  */
+
 public interface UserService {
     /**
      * Сохраняет пользователя в системе
      * @param user объект пользователя для сохранения
      */
-    void saveUser(User user);
+    User saveUser(User user);
 
     /**
      * Проверяет существование пользователя с указанным именем
@@ -49,4 +50,12 @@ public interface UserService {
      * Очищает всю корзину пользователя
      */
     void clearUserBasket(Long userId);
+    /**
+     * Добавление товара в корзину
+     */
+    void addToBasket(Long userId, Long productId, int quantity);
+    /**
+     * Удаления товара из корзины
+     */
+    void removeFromBasket(Long userId, Long productId);
 }

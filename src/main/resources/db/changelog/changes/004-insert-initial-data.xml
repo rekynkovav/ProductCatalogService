@@ -5,75 +5,65 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
 
-    <!-- Создаем администратора -->
+    <changeSet id="insert-initial-categories" author="Y_Lab_student">
+        <insert tableName="categories" schemaName="entity">
+            <column name="name" value="ELECTRONICS"/>
+        </insert>
+        <insert tableName="categories" schemaName="entity">
+            <column name="name" value="BOOKS"/>
+        </insert>
+        <insert tableName="categories" schemaName="entity">
+            <column name="name" value="CLOTHING"/>
+        </insert>
+    </changeSet>
+
     <changeSet id="insert-admin-user" author="Y_Lab_student">
         <insert tableName="users" schemaName="entity">
-            <column name="username" value="admin"/>
+            <column name="user_name" value="admin"/>
             <column name="password" value="admin123"/>
             <column name="role" value="ADMIN"/>
         </insert>
     </changeSet>
 
-    <!-- Создаем тестового пользователя -->
     <changeSet id="insert-test-user" author="Y_Lab_student">
         <insert tableName="users" schemaName="entity">
-            <column name="username" value="user"/>
+            <column name="user_name" value="user"/>
             <column name="password" value="user123"/>
             <column name="role" value="USER"/>
         </insert>
     </changeSet>
 
-    <!-- Добавляем продукты -->
     <changeSet id="insert-initial-products" author="Y_Lab_student">
-        <insert tableName="products" schemaName="entity">
-            <column name="name" value="Laptop"/>
-            <column name="quantity" value="10"/>
-            <column name="price" value="999.99"/>
-            <column name="category" value="ELECTRONICS"/>
-        </insert>
-        <insert tableName="products" schemaName="entity">
-            <column name="name" value="Smartphone"/>
-            <column name="quantity" value="20"/>
-            <column name="price" value="499.99"/>
-            <column name="category" value="ELECTRONICS"/>
-        </insert>
-        <insert tableName="products" schemaName="entity">
-            <column name="name" value="Book"/>
-            <column name="quantity" value="50"/>
-            <column name="price" value="29.99"/>
-            <column name="category" value="BOOKS"/>
-        </insert>
-        <insert tableName="products" schemaName="entity">
-            <column name="name" value="T-Shirt"/>
-            <column name="quantity" value="30"/>
-            <column name="price" value="19.99"/>
-            <column name="category" value="CLOTHING"/>
-        </insert>
+        <sql>
+            INSERT INTO entity.products (name, quantity, price, category_id)
+            VALUES
+                ('Laptop', 10, 999, (SELECT id FROM entity.categories WHERE name = 'ELECTRONICS')),
+                ('Smartphone', 20, 499, (SELECT id FROM entity.categories WHERE name = 'ELECTRONICS')),
+                ('Book', 50, 29, (SELECT id FROM entity.categories WHERE name = 'BOOKS')),
+                ('T-Shirt', 30, 19, (SELECT id FROM entity.categories WHERE name = 'CLOTHING'));
+        </sql>
     </changeSet>
 
-    <!-- Инициализируем метрики для пользователей -->
     <changeSet id="insert-initial-metrics" author="Y_Lab_student">
         <sql>
-            <!-- Метрики для админа -->
             INSERT INTO entity.user_metrics (user_id, metric_type, value)
-            SELECT u.id, 'PRODUCT_ADD_COUNT', 0 FROM entity.users u WHERE u.username = 'admin'
+            SELECT u.id, 'PRODUCT_ADD_COUNT', 0 FROM entity.users u WHERE u.user_name = 'admin'
                 ON CONFLICT (user_id, metric_type) DO NOTHING;
 
             INSERT INTO entity.user_metrics (user_id, metric_type, value)
-            SELECT u.id, 'PRODUCT_UPDATE_COUNT', 0 FROM entity.users u WHERE u.username = 'admin'
+            SELECT u.id, 'PRODUCT_UPDATE_COUNT', 0 FROM entity.users u WHERE u.user_name = 'admin'
                 ON CONFLICT (user_id, metric_type) DO NOTHING;
 
             INSERT INTO entity.user_metrics (user_id, metric_type, value)
-            SELECT u.id, 'PRODUCT_DELETE_COUNT', 0 FROM entity.users u WHERE u.username = 'admin'
-                ON CONFLICT (user_id, metric_type) DO NOTHING;
-
-            <!-- Метрики для пользователя -->
-            INSERT INTO entity.user_metrics (user_id, metric_type, value)
-            SELECT u.id, 'LOGIN_COUNT', 0 FROM entity.users u WHERE u.username = 'user'
+            SELECT u.id, 'PRODUCT_DELETE_COUNT', 0 FROM entity.users u WHERE u.user_name = 'admin'
                 ON CONFLICT (user_id, metric_type) DO NOTHING;
 
             INSERT INTO entity.user_metrics (user_id, metric_type, value)
-            SELECT u.id, 'LOGOUT_COUNT', 0 FROM entity.users u WHERE u.username = 'user'
+            SELECT u.id, 'LOGIN_COUNT', 0 FROM entity.users u WHERE u.user_name = 'user'
+                ON CONFLICT (user_id, metric_type) DO NOTHING;
+
+            INSERT INTO entity.user_metrics (user_id, metric_type, value)
+            SELECT u.id, 'LOGOUT_COUNT', 0 FROM entity.users u WHERE u.user_name = 'user'
                 ON CONFLICT (user_id, metric_type) DO NOTHING;
         </sql>
     </changeSet>

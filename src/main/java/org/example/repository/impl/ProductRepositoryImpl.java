@@ -1,60 +1,81 @@
 package org.example.repository.impl;
 
-import org.example.config.ConnectionManager;
-import org.example.model.entity.Category;
+import lombok.RequiredArgsConstructor;
 import org.example.model.entity.Product;
 import org.example.repository.ProductRepository;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.stereotype.Repository;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 /**
  * Реализация репозитория товаров с использованием JDBC.
  * Обеспечивает взаимодействие с таблицей products в базе данных PostgreSQL.
- * Реализует паттерн Singleton.
  */
+@Repository
+@RequiredArgsConstructor
 public class ProductRepositoryImpl implements ProductRepository {
-    // Константа для размера страницы пагинации
-    public static final int PAGE_SIZE = 20;
-    private final ConnectionManager connectionManager;
+    private final JdbcTemplate jdbcTemplate;
 
-    public ProductRepositoryImpl(ConnectionManager connectionManager) {
-        this.connectionManager = connectionManager;
-    }
+    private static final String SELECT_ALL = """
+            SELECT * FROM entity.products
+            """;
+    private static final String SELECT_BY_ID = SELECT_ALL + " WHERE id = ?";
+
+    private static final String SELECT_BY_CATEGORY_ID = SELECT_ALL + " WHERE category_id = ?";
+
+    private static final String INSERT = """
+        INSERT INTO entity.products (name, quantity, price, category_id)
+        VALUES (?, ?, ?, ?)
+        """;
+
+    private static final String UPDATE = """
+        UPDATE entity.products
+        SET name = ?, quantity = ?, price = ?, category_id = ?
+        WHERE id = ?
+        """;
+
+    private static final String DECREASE_QUANTITY_SQL = """
+        UPDATE entity.products
+        SET quantity = quantity - ?
+        WHERE id = ? AND quantity >= ?
+        """;
+
+    private static final String INCREASE_QUANTITY_SQL = """
+        UPDATE entity.products
+        SET quantity = quantity + ?
+        WHERE id = ?
+        """;
+    private static final String DELETE = "DELETE FROM entity.products WHERE id = ?";
+
+    private static final String EXISTS_BY_ID = "SELECT COUNT(*) FROM entity.products WHERE id = ?";
+
+    private static final String SELECT_PAGINATED = SELECT_ALL + " ORDER BY id LIMIT ? OFFSET ?";
+    private static final String COUNT_ALL = "SELECT COUNT(*) FROM entity.products";
+
+    private final RowMapper<Product> productRowMapper = (resultSet, rowNum) -> {
+        Product product = new Product();
+        product.setId(resultSet.getLong("id"));
+        product.setName(resultSet.getString("name"));
+        product.setQuantity(resultSet.getInt("quantity"));
+        product.setPrice(resultSet.getInt("price"));
+        product.setCategoryId(resultSet.getLong("category_id"));
+        return product;
+    };
+
     /**
      * {@inheritDoc}
-     * Генерирует уникальный идентификатор для нового товара.
+     * Метод Возвращает все товары
      */
     @Override
-    public Product save(Product product) {
-        String sql = "INSERT INTO entity.products (name, quantity, price, category) VALUES (?, ?, ?, ?)";
-
-        try (Connection connection = connectionManager.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-
-            preparedStatement.setString(1, product.getName());
-            preparedStatement.setInt(2, product.getQuantity());
-            preparedStatement.setInt(3, product.getPrice());
-            preparedStatement.setString(4, product.getCategory().name());
-
-            int affectedRows = preparedStatement.executeUpdate();
-            if (affectedRows > 0) {
-                try (ResultSet generatedKeys = preparedStatement.getGeneratedKeys()) {
-                    if (generatedKeys.next()) {
-                        product.setId(generatedKeys.getLong(1));
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException("Error saving product", e);
-        }
-        return product;
+    public List<Product> findAll() {
+        return jdbcTemplate.query(SELECT_ALL, productRowMapper);
     }
 
     /**
@@ -62,71 +83,12 @@ public class ProductRepositoryImpl implements ProductRepository {
      */
     @Override
     public Optional<Product> findById(Long id) {
-        String sql = "SELECT * FROM entity.products WHERE id = ?";
-
-        try (Connection connection = connectionManager.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-
-            preparedStatement.setLong(1, id);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            if (resultSet.next()) {
-                return Optional.of(mapResultSetToProduct(resultSet));
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException("Error finding product by id", e);
+        try {
+            Product product = jdbcTemplate.queryForObject(SELECT_BY_ID, productRowMapper, id);
+            return Optional.ofNullable(product);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
         }
-        return Optional.empty();
-    }
-
-    /**
-     * {@inheritDoc}
-     * Методы Возвращают товары отсортированные по идентификатору с пагинацией
-     */
-    @Override
-    public List<Product> findAll() {
-        return findAll(0); // По умолчанию возвращаем первую страницу
-    }
-
-    @Override
-    public List<Product> findAll(int page) {
-        List<Product> products = new ArrayList<>();
-        String sql = "SELECT * FROM entity.products ORDER BY id LIMIT ? OFFSET ?";
-
-        try (Connection connection = connectionManager.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-
-            int offset = page * PAGE_SIZE;
-            preparedStatement.setInt(1, PAGE_SIZE);
-            preparedStatement.setInt(2, offset);
-
-            ResultSet resultSet = preparedStatement.executeQuery();
-            while (resultSet.next()) {
-                products.add(mapResultSetToProduct(resultSet));
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException("Error finding all products", e);
-        }
-        return products;
-    }
-
-    /**
-     * Возвращает общее количество товаров в базе данных.
-     */
-    @Override
-    public int getTotalProductsCount() {
-        String sql = "SELECT COUNT(*) FROM entity.products";
-
-        try (Connection connection = connectionManager.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-
-            ResultSet resultSet = preparedStatement.executeQuery();
-            if (resultSet.next()) {
-                return resultSet.getInt(1);
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException("Error getting total products count", e);
-        }
-        return 0;
     }
 
     /**
@@ -134,22 +96,37 @@ public class ProductRepositoryImpl implements ProductRepository {
      * Возвращает товары указанной категории отсортированные по идентификатору.
      */
     @Override
-    public List<Product> findByCategory(Category category) {
-        List<Product> products = new ArrayList<>();
-        String sql = "SELECT * FROM entity.products WHERE category = ? ORDER BY id";
+    public List<Product> findByCategoryId(Long categoryId) {
+        return jdbcTemplate.query(SELECT_BY_CATEGORY_ID, productRowMapper, categoryId);
+    }
 
-        try (Connection connection = connectionManager.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+    /**
+     * {@inheritDoc}
+     * Генерирует уникальный идентификатор для нового товара.
+     */
+    @Override
+    public Product save(Product product) {
+        if (product.getId() == null) {
+            KeyHolder keyHolder = new GeneratedKeyHolder();
+            jdbcTemplate.update(connection -> {
+                PreparedStatement preparedStatement = connection.prepareStatement(INSERT, new String[]{"id"});
+                preparedStatement.setString(1, product.getName());
+                preparedStatement.setInt(2, product.getQuantity());
+                preparedStatement.setInt(3, product.getPrice());
+                preparedStatement.setLong(4, product.getCategoryId());
+                return preparedStatement;
+            }, keyHolder);
 
-            preparedStatement.setString(1, category.name());
-            ResultSet resultSet = preparedStatement.executeQuery();
-            while (resultSet.next()) {
-                products.add(mapResultSetToProduct(resultSet));
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException("Error finding products by category", e);
+            product.setId(keyHolder.getKey().longValue());
+        } else {
+            jdbcTemplate.update(UPDATE,
+                    product.getName(),
+                    product.getQuantity(),
+                    product.getPrice(),
+                    product.getCategoryId(),
+                    product.getId());
         }
-        return products;
+        return product;
     }
 
     /**
@@ -157,107 +134,35 @@ public class ProductRepositoryImpl implements ProductRepository {
      */
     @Override
     public boolean deleteById(Long id) {
-        String sql = "DELETE FROM entity.products WHERE id = ?";
-
-        try (Connection connection = connectionManager.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-
-            preparedStatement.setLong(1, id);
-            int rowsAffected = preparedStatement.executeUpdate();
-            return rowsAffected > 0;
-        } catch (SQLException e) {
-
-            return false;
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Product update(Product product) {
-        String sql = "UPDATE entity.products SET name = ?, quantity = ?, price = ?, category = ? WHERE id = ?";
-
-        try (Connection connection = connectionManager.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-
-            preparedStatement.setString(1, product.getName());
-            preparedStatement.setInt(2, product.getQuantity());
-            preparedStatement.setInt(3, product.getPrice());
-            preparedStatement.setString(4, product.getCategory().name());
-            preparedStatement.setLong(5, product.getId());
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException("Error updating product", e);
-        }
-        return product;
+        return jdbcTemplate.update(DELETE, id) > 0;
     }
 
     @Override
-    public void removeBasket(Long userId, Long productId) {
-        String sql = "DELETE FROM entity.user_basket WHERE user_id = ? AND product_id = ?";
+    public boolean existsById(Long id) {
+        Integer count = jdbcTemplate.queryForObject(EXISTS_BY_ID, Integer.class, id);
+        return count != null && count > 0;    }
 
-        try (Connection connection = connectionManager.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-
-            preparedStatement.setLong(1, userId);
-            preparedStatement.setLong(2, productId);
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException("Error removing product from basket", e);
-        }
+    @Override
+    public boolean decreaseQuantity(Long productId, int quantity) {
+        int rowsAffected = jdbcTemplate.update(DECREASE_QUANTITY_SQL, quantity, productId, quantity);
+        return rowsAffected > 0;
     }
 
     @Override
-    public List<Product> findByName(String nameProduct) {
-        List<Product> products = new ArrayList<>();
-        String sql = "SELECT * FROM entity.products WHERE name = ? ORDER BY id";
-
-        try (Connection connection = connectionManager.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-
-            preparedStatement.setString(1, nameProduct);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            while (resultSet.next()) {
-                products.add(mapResultSetToProduct(resultSet));
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException("Error finding products by name", e);
-        }
-        return products;
+    public boolean increaseQuantity(Long productId, int quantity) {
+        int rowsAffected = jdbcTemplate.update(INCREASE_QUANTITY_SQL, quantity, productId);
+        return rowsAffected > 0;
     }
 
-    /**
-     * Удаляет все записи в таблице products
-     */
     @Override
-    public void deleteAllProducts() {
-        String sql = "DELETE FROM entity.products";
-
-        try (Connection connection = connectionManager.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException("Error deleting all products", e);
-        }
+    public List<Product> findAllPaginated(int page, int size) {
+        int offset = page * size;
+        return jdbcTemplate.query(SELECT_PAGINATED, productRowMapper, size, offset);
     }
 
-    /**
-     * Преобразует ResultSet в объект Product.
-     *
-     * @param resultSet ResultSet с данными товара
-     * @return объект Product с заполненными полями
-     * @throws SQLException если произошла ошибка при чтении данных из ResultSet
-     */
     @Override
-    public Product mapResultSetToProduct(ResultSet resultSet) throws SQLException {
-        Product product = new Product();
-        product.setId(resultSet.getLong("id"));
-        product.setName(resultSet.getString("name"));
-        product.setQuantity(resultSet.getInt("quantity"));
-        product.setPrice(resultSet.getInt("price"));
-        product.setCategory(Category.valueOf(resultSet.getString("category")));
-        return product;
+    public Long count() {
+        Long count = jdbcTemplate.queryForObject(COUNT_ALL, Long.class);
+        return count != null ? count : 0;
     }
 }
