@@ -11,6 +11,8 @@ liquibase:
   default-schema: service
 
 server:
+  servlet:
+    context-path: /ProductCatalogService-1.0-SNAPSHOT
   port: 8080
 
 logging:

@@ -11,23 +11,19 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./init_productcatalog.sh:/docker-entrypoint-initdb.d/init_productcatalog.sh
+
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U productcatalog -d productcatalog"]
+      test: [ "CMD-SHELL", "pg_isready -U productcatalog -d productcatalog" ]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
       - productcatalog-network
 
-  liquibase:
-    image: liquibase/liquibase
-    depends_on:
-      - postgres
-    volumes:
-    - ./src/main/resources/db/changelog:/liquibase/changelog
-    - ./src/main/resources/application.yml:/liquibase/application.yml
-    working_dir: /resource
-    command: --defaults-file=resource/application.yml update
-
 volumes:
   postgres_data:
+
+networks:
+  productcatalog-network:
+    driver: bridge
