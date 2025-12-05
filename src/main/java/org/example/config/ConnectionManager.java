@@ -3,103 +3,53 @@ package org.example.config;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 
-/**
- * Менеджер соединений с базой данных.
- * Реализует паттерн Singleton для обеспечения единственного экземпляра.
- * Обеспечивает создание и управление соединением с PostgreSQL.
- */
 public class ConnectionManager {
+    private static final int POOL_SIZE = 10;
+    private static final BlockingQueue<Connection> connectionPool = new ArrayBlockingQueue<>(POOL_SIZE);
 
-    /**
-     * Единственный экземпляр менеджера соединений.
-     */
-    private static ConnectionManager instance;
-
-    /**
-     * Соединение с базой данных.
-     */
-    private Connection connection;
-
-    /**
-     * Статический блок инициализации драйвера PostgreSQL.
-     * Выполняется при загрузке класса.
-     *
-     * @throws RuntimeException если драйвер PostgreSQL не найден
-     */
     static {
         try {
             Class.forName(DataBaseConfig.getDriver());
         } catch (ClassNotFoundException e) {
-            throw new RuntimeException("PostgresSQL Driver not found", e);
+            throw new RuntimeException("PostgreSQL Driver not found", e);
         }
     }
 
-    /**
-     * Приватный конструктор для реализации паттерна Singleton.
-     * Инициализирует соединение с базой данных.
-     *
-     * @throws RuntimeException если не удалось установить соединение с БД
-     */
-    private ConnectionManager() {
+    public ConnectionManager() {
+        initializeConnectionPool();
+    }
+
+    private void initializeConnectionPool() {
         try {
-            this.connection = DriverManager.getConnection(
-                    DataBaseConfig.getUrl(),
-                    DataBaseConfig.getUserName(),
-                    DataBaseConfig.getPassword()
-            );
-            System.out.println("Connected to database: " + DataBaseConfig.getUrl());
+            for (int i = 0; i < POOL_SIZE; i++) {
+                Connection connection = createNewConnection();
+                connectionPool.offer(connection);
+            }
         } catch (SQLException e) {
-            throw new RuntimeException("Failed to initialize database connection to: " +
-                                       DataBaseConfig.getUrl() + " with user: " + DataBaseConfig.getUserName(), e);
+            throw new RuntimeException("Failed to initialize connection pool", e);
         }
     }
 
-    /**
-     * Возвращает единственный экземпляр менеджера соединений.
-     *
-     * @return экземпляр ConnectionManager
-     */
-    public static synchronized ConnectionManager getInstance() {
-        if (instance == null) {
-            instance = new ConnectionManager();
-        }
-        return instance;
+    private Connection createNewConnection() throws SQLException {
+        return DriverManager.getConnection(
+                DataBaseConfig.getUrl(),
+                DataBaseConfig.getUserName(),
+                DataBaseConfig.getPassword()
+        );
     }
 
-    /**
-     * Возвращает соединение с базой данных.
-     * Если соединение закрыто или не существует, создает новое.
-     *
-     * @return активное соединение с БД
-     * @throws RuntimeException если не удалось получить соединение
-     */
     public Connection getConnection() {
         try {
-            if (connection == null || connection.isClosed()) {
-                connection = DriverManager.getConnection(
-                        DataBaseConfig.getUrl(),
-                        DataBaseConfig.getUserName(),
-                        DataBaseConfig.getPassword()
-                );
+            Connection connection = connectionPool.take();
+            if (connection.isClosed() || !connection.isValid(2)) {
+                connection = createNewConnection();
             }
             return connection;
-        } catch (SQLException e) {
+        } catch (Exception e) {
             throw new RuntimeException("Failed to get database connection", e);
-        }
-    }
-
-    /**
-     * Закрывает соединение с базой данных.
-     * Если соединение активно, закрывает его.
-     */
-    public void closeConnection() {
-        try {
-            if (connection != null && !connection.isClosed()) {
-                connection.close();
-            }
-        } catch (SQLException e) {
-            System.err.println("Error closing connection: " + e.getMessage());
         }
     }
 }

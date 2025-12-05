@@ -1,9 +1,11 @@
 package org.example.testContainers;
 
 import org.example.config.ConnectionManager;
+import org.example.context.ApplicationContext;
 import org.example.model.entity.Category;
 import org.example.model.entity.Product;
 import org.example.repository.impl.ProductRepositoryImpl;
+import org.example.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -17,7 +19,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class ProductRepositoryImplTest extends BaseDatabaseTest {
 
-    private ProductRepositoryImpl productRepository = ProductRepositoryImpl.getInstance();
+    private ProductRepositoryImpl productRepository = ApplicationContext.getInstance().getBean(ProductRepositoryImpl.class);
+    private ConnectionManager connectionManager = ApplicationContext.getInstance().getBean(ConnectionManager.class);
 
     @BeforeEach
     void setUp() {
@@ -124,7 +127,7 @@ class ProductRepositoryImplTest extends BaseDatabaseTest {
      * Метод для очистки всех таблиц в базе данных с использованием TRUNCATE CASCADE для PostgreSQL
      */
     private void cleanupDatabase() {
-        try (Connection connection = ConnectionManager.getInstance().getConnection();
+        try (Connection connection = connectionManager.getConnection();
              Statement statement = connection.createStatement()) {
 
             // Очищаем таблицы в правильном порядке (сначала зависимые, потом основные)
@@ -139,7 +142,7 @@ class ProductRepositoryImplTest extends BaseDatabaseTest {
 
         } catch (SQLException e) {
             // Если TRUNCATE не работает, используем DELETE
-            try (Connection connection = ConnectionManager.getInstance().getConnection();
+            try (Connection connection = connectionManager.getConnection();
                  Statement statement = connection.createStatement()) {
 
                 statement.execute("DELETE FROM entity.user_metrics");

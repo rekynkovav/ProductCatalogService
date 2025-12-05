@@ -10,8 +10,20 @@ import java.util.Map;
  * @version 1.0
  * @since 2024
  */
-public interface MetricsRepository {
-
+public interface AspectRepository {
+    /**
+     * Сохраняет запись аудита в базу данных
+     *
+     * @param userId ID пользователя (может быть null для анонимных действий)
+     * @param username имя пользователя
+     * @param action выполненное действие
+     * @param clientIp IP адрес клиента
+     * @param status выполнения (SUCCESS, ERROR)
+     * @param executionTime время выполнения в миллисекундах
+     * @param errorMessage сообщение об ошибке (если есть)
+     */
+    void saveAuditLog(Long userId, String username, String action, String clientIp,
+                      String status, Long executionTime, String errorMessage);
     /**
      * Увеличивает значение указанной метрики для пользователя на 1.
      * Если метрика не существует, она будет создана с начальным значением 1.

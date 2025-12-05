@@ -1,6 +1,7 @@
 package org.example.testContainers;
 
 import org.example.config.ConnectionManager;
+import org.example.context.ApplicationContext;
 import org.example.model.entity.Category;
 import org.example.model.entity.Product;
 import org.example.model.entity.Role;
@@ -21,8 +22,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class BasketIntegrationTest extends BaseDatabaseTest {
 
-    private ProductServiceImpl productService = ProductServiceImpl.getInstance();
-    private UserServiceImpl userService = UserServiceImpl.getInstance();
+    private ProductServiceImpl productService = ApplicationContext.getInstance().getBean(ProductServiceImpl.class);
+    private UserServiceImpl userService = ApplicationContext.getInstance().getBean(UserServiceImpl.class);
+    private ConnectionManager connectionManager = ApplicationContext.getInstance().getBean(ConnectionManager.class);
     private User testUser;
     private Product testProduct;
 
@@ -37,7 +39,7 @@ class BasketIntegrationTest extends BaseDatabaseTest {
     }
 
     void cleanDatabase() {
-        try (Connection connection = ConnectionManager.getInstance().getConnection()) {
+        try (Connection connection = connectionManager.getConnection()) {
             connection.setAutoCommit(false); // Начинаем транзакцию
 
             try {

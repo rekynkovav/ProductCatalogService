@@ -1,7 +1,6 @@
 package org.example.repository.impl;
 
 import org.example.config.ConnectionManager;
-import org.example.config.MetricsConfig;
 import org.example.model.entity.Category;
 import org.example.model.entity.Product;
 import org.example.repository.ProductRepository;
@@ -21,30 +20,13 @@ import java.util.Optional;
  * Реализует паттерн Singleton.
  */
 public class ProductRepositoryImpl implements ProductRepository {
+    // Константа для размера страницы пагинации
+    public static final int PAGE_SIZE = 20;
+    private final ConnectionManager connectionManager;
 
-    /**
-     * Единственный экземпляр репозитория товаров.
-     */
-    private static ProductRepositoryImpl productRepository;
-
-    /**
-     * Возвращает единственный экземпляр репозитория товаров.
-     *
-     * @return экземпляр ProductRepositoryImpl
-     */
-    public static synchronized ProductRepositoryImpl getInstance() {
-        if (productRepository == null) {
-            productRepository = new ProductRepositoryImpl();
-        }
-        return productRepository;
+    public ProductRepositoryImpl(ConnectionManager connectionManager) {
+        this.connectionManager = connectionManager;
     }
-
-    /**
-     * Приватный конструктор для реализации паттерна Singleton.
-     */
-    private ProductRepositoryImpl() {
-    }
-
     /**
      * {@inheritDoc}
      * Генерирует уникальный идентификатор для нового товара.
@@ -53,8 +35,9 @@ public class ProductRepositoryImpl implements ProductRepository {
     public Product save(Product product) {
         String sql = "INSERT INTO entity.products (name, quantity, price, category) VALUES (?, ?, ?, ?)";
 
-        try (Connection connection = ConnectionManager.getInstance().getConnection();
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
             preparedStatement.setString(1, product.getName());
             preparedStatement.setInt(2, product.getQuantity());
             preparedStatement.setInt(3, product.getPrice());
@@ -81,34 +64,42 @@ public class ProductRepositoryImpl implements ProductRepository {
     public Optional<Product> findById(Long id) {
         String sql = "SELECT * FROM entity.products WHERE id = ?";
 
-        try (Connection connection = ConnectionManager.getInstance().getConnection();
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
             preparedStatement.setLong(1, id);
             ResultSet resultSet = preparedStatement.executeQuery();
-
             if (resultSet.next()) {
                 return Optional.of(mapResultSetToProduct(resultSet));
             }
         } catch (SQLException e) {
             throw new RuntimeException("Error finding product by id", e);
         }
-
         return Optional.empty();
     }
 
     /**
      * {@inheritDoc}
-     * Возвращает товары отсортированные по идентификатору.
+     * Методы Возвращают товары отсортированные по идентификатору с пагинацией
      */
     @Override
     public List<Product> findAll() {
+        return findAll(0); // По умолчанию возвращаем первую страницу
+    }
+
+    @Override
+    public List<Product> findAll(int page) {
         List<Product> products = new ArrayList<>();
-        String sql = "SELECT * FROM entity.products ORDER BY id";
+        String sql = "SELECT * FROM entity.products ORDER BY id LIMIT ? OFFSET ?";
 
-        try (Connection connection = ConnectionManager.getInstance().getConnection();
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            ResultSet resultSet = preparedStatement.executeQuery();
 
+            int offset = page * PAGE_SIZE;
+            preparedStatement.setInt(1, PAGE_SIZE);
+            preparedStatement.setInt(2, offset);
+
+            ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 products.add(mapResultSetToProduct(resultSet));
             }
@@ -119,6 +110,26 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     /**
+     * Возвращает общее количество товаров в базе данных.
+     */
+    @Override
+    public int getTotalProductsCount() {
+        String sql = "SELECT COUNT(*) FROM entity.products";
+
+        try (Connection connection = connectionManager.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()) {
+                return resultSet.getInt(1);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error getting total products count", e);
+        }
+        return 0;
+    }
+
+    /**
      * {@inheritDoc}
      * Возвращает товары указанной категории отсортированные по идентификатору.
      */
@@ -126,8 +137,10 @@ public class ProductRepositoryImpl implements ProductRepository {
     public List<Product> findByCategory(Category category) {
         List<Product> products = new ArrayList<>();
         String sql = "SELECT * FROM entity.products WHERE category = ? ORDER BY id";
-        try (Connection connection = ConnectionManager.getInstance().getConnection();
+
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
             preparedStatement.setString(1, category.name());
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
@@ -143,16 +156,18 @@ public class ProductRepositoryImpl implements ProductRepository {
      * {@inheritDoc}
      */
     @Override
-    public void deleteById(Long id) {
+    public boolean deleteById(Long id) {
         String sql = "DELETE FROM entity.products WHERE id = ?";
 
-        try (Connection connection = ConnectionManager.getInstance().getConnection();
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setLong(1, id);
-            preparedStatement.executeUpdate();
 
+            preparedStatement.setLong(1, id);
+            int rowsAffected = preparedStatement.executeUpdate();
+            return rowsAffected > 0;
         } catch (SQLException e) {
-            throw new RuntimeException("Error deleting product by id", e);
+
+            return false;
         }
     }
 
@@ -163,8 +178,9 @@ public class ProductRepositoryImpl implements ProductRepository {
     public Product update(Product product) {
         String sql = "UPDATE entity.products SET name = ?, quantity = ?, price = ?, category = ? WHERE id = ?";
 
-        try (Connection connection = ConnectionManager.getInstance().getConnection();
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
             preparedStatement.setString(1, product.getName());
             preparedStatement.setInt(2, product.getQuantity());
             preparedStatement.setInt(3, product.getPrice());
@@ -181,15 +197,13 @@ public class ProductRepositoryImpl implements ProductRepository {
     public void removeBasket(Long userId, Long productId) {
         String sql = "DELETE FROM entity.user_basket WHERE user_id = ? AND product_id = ?";
 
-        try (Connection connection = ConnectionManager.getInstance().getConnection();
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
             preparedStatement.setLong(1, userId);
             preparedStatement.setLong(2, productId);
-
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            MetricsConfig.getInstance().getDatabaseErrorCounter().increment();
             throw new RuntimeException("Error removing product from basket", e);
         }
     }
@@ -198,8 +212,10 @@ public class ProductRepositoryImpl implements ProductRepository {
     public List<Product> findByName(String nameProduct) {
         List<Product> products = new ArrayList<>();
         String sql = "SELECT * FROM entity.products WHERE name = ? ORDER BY id";
-        try (Connection connection = ConnectionManager.getInstance().getConnection();
+
+        try (Connection connection = connectionManager.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
             preparedStatement.setString(1, nameProduct);
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
@@ -212,13 +228,30 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     /**
+     * Удаляет все записи в таблице products
+     */
+    @Override
+    public void deleteAllProducts() {
+        String sql = "DELETE FROM entity.products";
+
+        try (Connection connection = connectionManager.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Error deleting all products", e);
+        }
+    }
+
+    /**
      * Преобразует ResultSet в объект Product.
      *
      * @param resultSet ResultSet с данными товара
      * @return объект Product с заполненными полями
      * @throws SQLException если произошла ошибка при чтении данных из ResultSet
      */
-    Product mapResultSetToProduct(ResultSet resultSet) throws SQLException {
+    @Override
+    public Product mapResultSetToProduct(ResultSet resultSet) throws SQLException {
         Product product = new Product();
         product.setId(resultSet.getLong("id"));
         product.setName(resultSet.getString("name"));
@@ -226,19 +259,5 @@ public class ProductRepositoryImpl implements ProductRepository {
         product.setPrice(resultSet.getInt("price"));
         product.setCategory(Category.valueOf(resultSet.getString("category")));
         return product;
-    }
-
-    /**
-     * удаляет все записи в таблице products
-     */
-    @Override
-    public void deleteAllProducts() {
-        String sql = "DELETE FROM entity.products";
-        try (Connection connection = ConnectionManager.getInstance().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException("Error deleting all products", e);
-        }
     }
 }

@@ -1,4 +1,4 @@
-package org.example.config;
+package org.example.service;
 
 import org.example.model.entity.Role;
 import org.example.model.entity.User;
@@ -7,7 +7,7 @@ import org.example.model.entity.User;
  * Интерфейс конфигурации безопасности пользователей.
  * Определяет методы для аутентификации и регистрации пользователей.
  */
-public interface UserSecurityConfig {
+public interface SecurityService {
 
     /**
      * Проверяет учетные данные пользователя.
@@ -45,4 +45,11 @@ public interface UserSecurityConfig {
      * Сбрасывает состояние конфигурации безопасности (для тестирования).
      */
     void reset();
+
+    /**
+     * Возвращает текущего аутентифицированного пользователя.
+     *
+     * @return текущий пользователь или null если пользователь не аутентифицирован
+     */
+    User getThisUser();
 }

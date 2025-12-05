@@ -1,73 +1,29 @@
 package org.example.service.impl;
 
-import org.example.config.MetricsConfig;
-import org.example.config.impl.UserSecurityConfigImpl;
 import org.example.model.entity.Category;
 import org.example.model.entity.Product;
+import org.example.repository.ProductRepository;
+import org.example.repository.UserRepository;
 import org.example.repository.impl.ProductRepositoryImpl;
-import org.example.repository.impl.UserRepositoryImpl;
 import org.example.service.ProductService;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Реализация сервиса товаров.
  * Обеспечивает бизнес-логику управления товарами магазина.
- * Собирает метрики операций с товарами и корзиной.
  * Реализует паттерн Singleton.
  */
 public class ProductServiceImpl implements ProductService {
 
-    /**
-     * Единственный экземпляр сервиса товаров.
-     */
-    private static ProductServiceImpl instance;
 
-    /**
-     * Сервис безопасности пользователей.
-     */
-    private UserSecurityConfigImpl userSecurityService;
+    private final UserRepository userRepository;
+    private final ProductRepository productRepository;
 
-    /**
-     * Репозиторий товаров.
-     */
-    private ProductRepositoryImpl productRepository;
-
-    /**
-     * Репозиторий пользователей.
-     */
-    private UserRepositoryImpl userRepository;
-
-    /**
-     * Конфигурация метрик для сбора статистики.
-     */
-    private MetricsConfig metricsConfig;
-    private MetricsServiceImpl metricsService;
-
-    /**
-     * Возвращает единственный экземпляр сервиса товаров.
-     *
-     * @return экземпляр ProductServiceImpl
-     */
-    public static synchronized ProductServiceImpl getInstance() {
-        if (instance == null) {
-            instance = new ProductServiceImpl();
-        }
-        return instance;
-    }
-
-    /**
-     * Приватный конструктор для реализации паттерна Singleton.
-     * Инициализирует зависимости от других сервисов и репозиториев.
-     */
-    private ProductServiceImpl() {
-        userSecurityService = UserSecurityConfigImpl.getInstance();
-        productRepository = ProductRepositoryImpl.getInstance();
-        userRepository = UserRepositoryImpl.getInstance();
-        metricsConfig = MetricsConfig.getInstance();
-        metricsService = MetricsServiceImpl.getInstance();
+    public ProductServiceImpl(UserRepository userRepository, ProductRepository productRepository) {
+        this.userRepository = userRepository;
+        this.productRepository = productRepository;
     }
 
     /**
@@ -75,60 +31,34 @@ public class ProductServiceImpl implements ProductService {
      * Собирает метрики добавления товаров.
      *
      * @param product товар для сохранения
+     * @return
      */
     @Override
-    public void saveProduct(Product product) {
-        long startTime = System.currentTimeMillis();
-        try {
-            productRepository.save(product);
-
-            // Сохраняем метрики в БД
-            if (userSecurityService.isAuthenticated()) {
-                Long userId = userSecurityService.getThisUser().getId();
-                metricsService.incrementMetric(userId, "PRODUCT_ADD_COUNT");
-            }
-
-            // Micrometer метрики
-            metricsConfig.getProductAddCounter().increment();
-        } finally {
-            long duration = System.currentTimeMillis() - startTime;
-            metricsConfig.getProductOperationTimer().record(duration, TimeUnit.MILLISECONDS);
-        }
+    public Product saveProduct(Product product) {
+        productRepository.save(product);
+        return product;
     }
 
     /**
      * Обновляет информацию о существующем товаре.
-     * Собирает метрики обновления товаров.
      *
-     * @param id       идентификатор товара
-     * @param name     новое название товара
-     * @param quantity новое количество товара
-     * @param price    новая цена товара
-     * @param category новая категория товара
      * @throws RuntimeException если товар с указанным идентификатором не найден
      */
     @Override
-    public void updateProduct(long id, String name, int quantity, int price, Category category) {
-        long startTime = System.currentTimeMillis();
-        try {
-            Optional<Product> productOptional = productRepository.findById(id);
-            if (productOptional.isPresent()) {
-                Product product = productOptional.get();
-                product.setName(name);
-                product.setQuantity(quantity);
-                product.setPrice(price);
-                product.setCategory(category);
-                productRepository.update(product);
+    public Product updateProduct(Product product) {
+        Optional<Product> productOptional = productRepository.findById(product.getId());
+        if (productOptional.isPresent()) {
+            Product newProduct = productOptional.get();
+            newProduct.setName(product.getName());
+            newProduct.setQuantity(product.getQuantity());
+            newProduct.setPrice(product.getPrice());
+            newProduct.setCategory(product.getCategory());
+            productRepository.update(newProduct);
 
-                // Micrometer метрики
-                metricsConfig.getProductUpdateCounter().increment();
-            } else {
-                throw new RuntimeException("Product not found with id: " + id);
-            }
-        } finally {
-            long duration = System.currentTimeMillis() - startTime;
-            metricsConfig.getProductOperationTimer().record(duration, TimeUnit.MILLISECONDS);
+        } else {
+            throw new RuntimeException("Product not found with id: " + product.getId());
         }
+        return product;
     }
 
     /**
@@ -138,55 +68,25 @@ public class ProductServiceImpl implements ProductService {
      * @param id идентификатор товара для удаления
      */
     @Override
-    public void deleteProductById(long id) {
-        long startTime = System.currentTimeMillis();
-        try {
-            productRepository.deleteById(id);
-
-            // Micrometer метрики
-            metricsConfig.getProductDeleteCounter().increment();
-
-        } finally {
-            long duration = System.currentTimeMillis() - startTime;
-            metricsConfig.getProductOperationTimer().record(duration, TimeUnit.MILLISECONDS);
-        }
-    }
-
-    /**
-     * Отображает все товары в магазине.
-     * Выводит список в консоль.
-     */
-    @Override
-    public List<Product> showAllProduct() {
-        List<Product> productList = productRepository.findAll();
-        if (!productList.isEmpty()) {
-            for (Product product : productList) {
-                System.out.println(product.getId() + " "
-                                   + product.getName() + " цена: "
-                                   + product.getPrice() + " доступно: "
-                                   + product.getQuantity() + " шт. Категория: "
-                                   + product.getCategory());
-            }
-        } else {
-            System.out.println("товаров нет в наличии");
-        }
-        System.out.println();
-        return productList;
+    public boolean deleteProductById(long id) {
+        return productRepository.deleteById(id);
     }
 
     /**
      * Ищет товары по категории и отображает результаты.
      *
      * @param category категория для поиска
+     * @return
      */
     @Override
-    public void searchCategory(Category category) {
+    public List<Product> searchCategory(Category category) {
         List<Product> listProduct = productRepository.findByCategory(category);
         if (!listProduct.isEmpty()) {
             listProduct.forEach(System.out::println);
-            return;
+            return listProduct;
         }
         System.out.println("В данной категории нет товаров");
+        return listProduct;
     }
 
     /**
@@ -200,29 +100,19 @@ public class ProductServiceImpl implements ProductService {
      */
     @Override
     public void addBasket(long userId, long productId, int quantity) {
-        long startTime = System.currentTimeMillis();
-        try {
-            Optional<Product> productOptional = productRepository.findById(productId);
-            if (productOptional.isPresent()) {
-                Product product = productOptional.get();
-                if (quantity <= product.getQuantity()) {
-                    userRepository.addToBasket(userId, product.getId(), quantity);
-                    product.subtractQuantity(quantity);
-                    productRepository.update(product);
-
-                    // Сохраняем метрики в БД
-                    metricsService.incrementMetric(userId, "BASKET_ADD_COUNT");
-
-                    System.out.println("Товар успешно добавлен в корзину");
-                } else {
-                    System.out.println("Недостаточно товара в наличии. Доступно: " + product.getQuantity());
-                }
+        Optional<Product> productOptional = productRepository.findById(productId);
+        if (productOptional.isPresent()) {
+            Product product = productOptional.get();
+            if (quantity <= product.getQuantity()) {
+                userRepository.addToBasket(userId, product.getId(), quantity);
+                product.subtractQuantity(quantity);
+                productRepository.update(product);
+                System.out.println("Товар успешно добавлен в корзину");
             } else {
-                System.out.println("Товар не найден");
+                System.out.println("Недостаточно товара в наличии. Доступно: " + product.getQuantity());
             }
-        } finally {
-            long duration = System.currentTimeMillis() - startTime;
-            metricsConfig.getProductOperationTimer().record(duration, TimeUnit.MILLISECONDS);
+        } else {
+            System.out.println("Товар не найден");
         }
     }
 
@@ -245,5 +135,58 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<Product> findByName(String nameProduct) {
         return productRepository.findByName(nameProduct);
+    }
+
+    @Override
+    public List<Product> getAllProduct(int page) {
+        List<Product> productList = productRepository.findAll(page);
+        displayProducts(productList, page);
+        return productList;
+    }
+
+    @Override
+    public int getTotalPages() {
+        int totalProducts = productRepository.getTotalProductsCount();
+        return (int) Math.ceil((double) totalProducts / ProductRepositoryImpl.PAGE_SIZE);
+    }
+
+    /**
+     * Отображает все товары в магазине с пагинацией.
+     * Выводит список в консоль.
+     */
+    @Override
+    public List<Product> getAllProduct() {
+        return getAllProduct(0); // По умолчанию показываем первую страницу
+    }
+
+    /**
+     * Вспомогательный метод для отображения товаров с информацией о пагинации
+     */
+    private void displayProducts(List<Product> productList, int currentPage) {
+        if (!productList.isEmpty()) {
+            System.out.println("=== Страница " + (currentPage + 1) + " ===" + "\n");
+            for (Product product : productList) {
+                System.out.println(product.getId() + " "
+                                   + product.getName() + " цена: "
+                                   + product.getPrice() + " доступно: "
+                                   + product.getQuantity() + " шт. Категория: "
+                                   + product.getCategory());
+            }
+
+            // Показываем информацию о пагинации
+            int totalPages = getTotalPages();
+            System.out.println("\n--- Страница " + (currentPage + 1) + " из " + totalPages + " ---");
+            if (currentPage > 0) {
+                System.out.print("Для предыдущей страницы введите: 'prev'");
+            }
+            if (currentPage < totalPages - 1) {
+                if (currentPage > 0) System.out.print(" | ");
+                System.out.print("Для следующей страницы введите: 'next'");
+            }
+            System.out.println();
+        } else {
+            System.out.println("товаров нет в наличии");
+        }
+        System.out.println();
     }
 }

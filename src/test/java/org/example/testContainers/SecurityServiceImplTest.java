@@ -1,8 +1,10 @@
 package org.example.testContainers;
 
-import org.example.config.impl.UserSecurityConfigImpl;
+import org.example.context.ApplicationContext;
+import org.example.service.impl.SecurityServiceImpl;
 import org.example.model.entity.Role;
 import org.example.model.entity.User;
+import org.example.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,15 +13,15 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class UserSecurityConfigImplTest extends BaseDatabaseTest {
+class SecurityServiceImplTest extends BaseDatabaseTest {
 
-    private UserSecurityConfigImpl userSecurityConfig;
+    private SecurityServiceImpl userSecurityConfig;
     private User testUser;
     private String testUsername;
 
     @BeforeEach
     void setUp() {
-        userSecurityConfig = UserSecurityConfigImpl.getInstance();
+        userSecurityConfig = ApplicationContext.getInstance().getBean(SecurityServiceImpl.class);
 
         // Используем уникальное имя для каждого теста
         testUsername = generateUniqueUsername("testuser");
@@ -134,7 +136,7 @@ class UserSecurityConfigImplTest extends BaseDatabaseTest {
     private void resetUserSecurityConfig() {
         try {
             // Сбрасываем состояние через рефлексию
-            var field = UserSecurityConfigImpl.class.getDeclaredField("thisUser");
+            var field = SecurityServiceImpl.class.getDeclaredField("thisUser");
             field.setAccessible(true);
             field.set(userSecurityConfig, null);
         } catch (Exception e) {

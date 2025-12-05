@@ -3,6 +3,8 @@ package org.example.repository;
 import org.example.model.entity.Category;
 import org.example.model.entity.Product;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,6 +36,7 @@ public interface ProductRepository {
      * @return список всех товаров в базе данных
      */
     List<Product> findAll();
+    List<Product> findAll(int page);
 
     /**
      * Находит товары по категории.
@@ -48,7 +51,7 @@ public interface ProductRepository {
      *
      * @param id идентификатор товара для удаления
      */
-    void deleteById(Long id);
+    boolean deleteById(Long id);
 
     /**
      * Обновляет информацию о товаре.
@@ -77,4 +80,17 @@ public interface ProductRepository {
      */
     void deleteAllProducts();
 
+    /**
+     * Преобразует ResultSet в объект Product.
+     *
+     * @param resultSet ResultSet с данными товара
+     * @return объект Product с заполненными полями
+     * @throws SQLException если произошла ошибка при чтении данных из ResultSet
+     */
+    Product mapResultSetToProduct(ResultSet resultSet) throws SQLException;
+
+    /**
+     * Возвращает общее количество товаров в базе данных.
+     */
+    int getTotalProductsCount();
 }

@@ -1,14 +1,11 @@
-package org.example.config.impl;
+package org.example.service.impl;
 
-import org.example.config.MetricsConfig;
-import org.example.config.UserSecurityConfig;
+import org.example.service.SecurityService;
 import org.example.model.entity.Role;
 import org.example.model.entity.User;
-import org.example.service.impl.MetricsServiceImpl;
-import org.example.service.impl.UserServiceImpl;
+import org.example.service.UserService;
 
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Реализация конфигурации безопасности пользователей.
@@ -16,49 +13,13 @@ import java.util.concurrent.TimeUnit;
  * Собирает метрики для мониторинга активности пользователей.
  * Реализует паттерн Singleton.
  */
-public class UserSecurityConfigImpl implements UserSecurityConfig {
+public class SecurityServiceImpl implements SecurityService {
 
-    /**
-     * Единственный экземпляр конфигурации безопасности.
-     */
-    private static UserSecurityConfigImpl instance;
-
-    /**
-     * Сервис для работы с пользователями.
-     */
-    private UserServiceImpl userService;
-
-    /**
-     * Конфигурация метрик для сбора статистики.
-     */
-    private MetricsConfig metricsConfig;
-    private MetricsServiceImpl metricsService;
-
-    /**
-     * Текущий аутентифицированный пользователь.
-     */
+    private UserService userService;
     private User thisUser;
 
-    /**
-     * Возвращает единственный экземпляр конфигурации безопасности.
-     *
-     * @return экземпляр UserSecurityConfigImpl
-     */
-    public static synchronized UserSecurityConfigImpl getInstance() {
-        if (instance == null) {
-            instance = new UserSecurityConfigImpl();
-        }
-        return instance;
-    }
-
-    /**
-     * Приватный конструктор для реализации паттерна Singleton.
-     * Инициализирует сервис пользователей и конфигурацию метрик.
-     */
-    private UserSecurityConfigImpl() {
-        userService = UserServiceImpl.getInstance();
-        metricsConfig = MetricsConfig.getInstance();
-        metricsService = MetricsServiceImpl.getInstance();
+    public SecurityServiceImpl(UserService userService) {
+        this.userService = userService;
     }
 
     /**
@@ -90,31 +51,17 @@ public class UserSecurityConfigImpl implements UserSecurityConfig {
      */
     @Override
     public boolean verificationUser(String userName, String password) {
-        long startTime = System.currentTimeMillis();
-
-        try {
-            Optional<User> userOptional = userService.findByUsername(userName);
-            if (userOptional.isPresent()) {
-                User user = userOptional.get();
-                if (user.getPassword().equals(password)) {
-                    setThisUser(user);
-
-                    // Сохраняем метрики в БД
-                    metricsService.incrementMetric(user.getId(), "LOGIN_COUNT");
-                    metricsConfig.incrementActiveUsers();
-
-                    // Micrometer метрики
-                    metricsConfig.getUserLoginCounter().increment();
-
-                    return true;
-                }
+        Optional<User> userOptional = userService.findByUsername(userName);
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            if (user.getPassword().equals(password)) {
+                setThisUser(user);
+                return true;
             }
-            System.out.println("Неверный логин или пароль");
-            return false;
-        } finally {
-            long duration = System.currentTimeMillis() - startTime;
-            metricsConfig.getUserAuthenticationTimer().record(duration, TimeUnit.MILLISECONDS);
         }
+        System.out.println("Неверный логин или пароль");
+        return false;
+
     }
 
     /**
@@ -130,7 +77,6 @@ public class UserSecurityConfigImpl implements UserSecurityConfig {
         User user = new User(userName, password, role);
         userService.saveUser(user);
         thisUser = user;
-        metricsConfig.getUserRegistrationCounter().increment();
     }
 
     /**
@@ -149,9 +95,6 @@ public class UserSecurityConfigImpl implements UserSecurityConfig {
      */
     public void logout() {
         if (thisUser != null) {
-            metricsConfig.incrementUserMetric(thisUser.getId(), "LOGOUT_COUNT");
-            metricsConfig.decrementActiveUsers();
-            metricsConfig.getUserLogoutCounter().increment();
             thisUser = null;
         }
     }

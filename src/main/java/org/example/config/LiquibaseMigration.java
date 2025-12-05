@@ -13,41 +13,45 @@ import java.sql.Connection;
  * Выполняет SQL-скрипты из changelog для приведения схемы БД к актуальному состоянию.
  */
 public class LiquibaseMigration {
+    private final ConnectionManager connectionManager;
+
+    public LiquibaseMigration(ConnectionManager connectionManager) {
+        this.connectionManager = connectionManager;
+    }
 
     /**
      * Выполняет миграции базы данных с помощью Liquibase.
-     * Если миграции отключены в конфигурации, выводит сообщение и завершает работу.
      *
      * @throws RuntimeException если выполнение миграций завершилось ошибкой
      */
-    public static void runMigration() {
+    public void runMigration() {
         if (!DataBaseConfig.isLiquibaseEnabled()) {
             System.out.println("Liquibase migrations are disabled");
             return;
         }
-        Connection connection = null;
-        try {
-            connection = ConnectionManager.getInstance().getConnection();
-            Database database = DatabaseFactory.getInstance()
-                    .findCorrectDatabaseImplementation(new JdbcConnection(connection));
 
-            Liquibase liquibase = new Liquibase(
-                    DataBaseConfig.getLiquibaseChangeLog(),
-                    new ClassLoaderResourceAccessor(),
-                    database
-            );
-            liquibase.update();
+        try {
+            Connection connection = connectionManager.getConnection();
+            executeLiquibaseUpdate(connection);
             System.out.println("Liquibase migrations completed successfully");
         } catch (Exception e) {
             throw new RuntimeException("Liquibase migration failed", e);
-        } finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (Exception e) {
-                    System.err.println("Error closing connection: " + e.getMessage());
-                }
-            }
         }
+    }
+
+    private void executeLiquibaseUpdate(Connection connection) throws Exception {
+        Database database = DatabaseFactory.getInstance()
+                .findCorrectDatabaseImplementation(new JdbcConnection(connection));
+
+        createLiquibaseInstance(database).update();
+
+    }
+
+    private Liquibase createLiquibaseInstance(Database database) {
+        return new Liquibase(
+                DataBaseConfig.getLiquibaseChangeLog(),
+                new ClassLoaderResourceAccessor(),
+                database
+        );
     }
 }
