@@ -11,10 +11,26 @@ import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
+/**
+ * Конфигурационный класс для настройки Swagger (OpenAPI) документации.
+ * Включает автоматическую генерацию API документации на основе аннотаций в контроллерах.
+ *
+ * <p>Swagger UI доступен по адресу: <code>/swagger-ui.html</code></p>
+ *
+ * @see Docket
+ * @see EnableSwagger2
+ */
 @Configuration
 @EnableSwagger2
 public class SwaggerConfig {
 
+    /**
+     * Создает и настраивает основной Docket (конфигурацию) для Swagger.
+     * Определяет базовый пакет для сканирования контроллеров и глобальные настройки API.
+     *
+     * @return настроенный объект Docket для документации API
+     * @apiNote API будет включать только контроллеры из пакета org.example.controller
+     */
     @Bean
     public Docket api() {
         return new Docket(DocumentationType.SWAGGER_2)
@@ -27,6 +43,13 @@ public class SwaggerConfig {
                 .enable(true);
     }
 
+    /**
+     * Создает метаинформацию об API для отображения в Swagger UI.
+     * Включает заголовок, описание, версию и контактную информацию.
+     *
+     * @return объект ApiInfo с информацией об API
+     * @see ApiInfoBuilder
+     */
     @Bean
     public ApiInfo apiInfo() {
         return new ApiInfoBuilder()

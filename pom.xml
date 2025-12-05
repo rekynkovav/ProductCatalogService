@@ -14,10 +14,10 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <spring.version>5.3.30</spring.version>
-        <spring-jdbc.version>5.3.30</spring-jdbc.version>
-        <springfox.version>2.9.2</springfox.version>
-        <jackson.version>2.13.4</jackson.version>
+        <spring.version>5.3.31</spring.version>
+        <spring-jdbc.version>5.3.31</spring-jdbc.version>
+        <springfox.version>3.0.0</springfox.version>
+        <jackson.version>2.14.3</jackson.version>
         <postgresql.version>42.6.0</postgresql.version>
         <hikaricp.version>5.0.1</hikaricp.version>
         <liquibase.version>4.20.0</liquibase.version>

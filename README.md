@@ -1,7 +1,8 @@
-Swagger UI: http://localhost:8080/swagger-ui.html
-OpenAPI JSON: http://localhost:8080/v3/api-docs
+Swagger UI: http://localhost:8080/ProductCatalogService-1.0-SNAPSHOT/swagger-ui.html
+OpenAPI JSON: http://localhost:8080/ProductCatalogService-1.0-SNAPSHOT/v3/api-docs
 
 endpoint в контроллере:
+http://localhost:8080/ProductCatalogService-1.0-SNAPSHOT/
 🔐 Аутентификация (Authentication)
 POST /api/auth/register - Регистрация нового пользователя
 POST /api/auth/login - Вход в систему

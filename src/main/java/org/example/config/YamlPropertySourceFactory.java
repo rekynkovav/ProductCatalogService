@@ -9,8 +9,24 @@ import org.springframework.lang.Nullable;
 import java.io.IOException;
 import java.util.Properties;
 
+/**
+ * Фабрика для загрузки свойств из YAML файлов.
+ * Позволяет использовать YAML файлы вместо традиционных .properties файлов.
+ *
+ * @apiNote Интегрируется с Spring через аннотацию @PropertySource
+ * @see PropertySourceFactory
+ */
 public class YamlPropertySourceFactory implements PropertySourceFactory {
 
+    /**
+     * Создает источник свойств из YAML файла.
+     *
+     * @param name     имя источника свойств (может быть null)
+     * @param resource закодированный ресурс с YAML содержимым
+     * @return источник свойств Spring
+     * @throws IOException если произошла ошибка чтения ресурса
+     * @see YamlPropertiesFactoryBean
+     */
     @Override
     public org.springframework.core.env.PropertySource<?> createPropertySource(
             @Nullable String name, EncodedResource resource) throws IOException {

@@ -17,20 +17,55 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+/**
+ * Компонент для выполнения миграций базы данных с помощью Liquibase.
+ * Автоматически запускается при инициализации контекста Spring.
+ *
+ * <p>Основные функции:</p>
+ * <ul>
+ *   <li>Выполнение SQL миграций из changelog файлов</li>
+ *   <li>Отслеживание выполненных миграций в таблице databasechangelog</li>
+ *   <li>Возможность отключения миграций через конфигурацию</li>
+ * </ul>
+ *
+ * @apiNote Миграции выполняются только один раз при запуске приложения
+ * @see Component
+ * @see PostConstruct
+ */
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class LiquibaseMigration {
 
+    /**
+     * Источник данных для подключения к БД.
+     */
     private final DataSource dataSource;
+
+    /**
+     * Окружение Spring для доступа к свойствам.
+     */
     private final Environment environment;
 
+    /**
+     * Флаг включения/отключения миграций Liquibase. По умолчанию true.
+     */
     @Value("${liquibase.enabled:true}")
     private boolean liquibaseEnabled;
 
+    /**
+     * Путь к основному changelog файлу Liquibase.
+     */
     @Value("${liquibase.change-log:classpath:db/changelog/db.changelog-master.xml}")
     private String changelogPath;
 
+    /**
+     * Метод, выполняющий миграции базы данных.
+     * Вызывается автоматически после инициализации бина.
+     *
+     * @throws RuntimeException если миграция не удалась
+     * @apiNote Если liquibase.enabled=false, миграции пропускаются
+     */
     @PostConstruct
     public void runMigration() {
         if (!liquibaseEnabled) {

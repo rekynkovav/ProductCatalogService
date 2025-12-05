@@ -17,27 +17,46 @@ import java.util.Arrays;
 
 /**
  * Программный инициализатор веб-приложения для Spring.
+ * Заменяет традиционный web.xml, настраивая контекст Spring, сервлеты и фильтры.
+ *
+ * <p>Основные функции:</p>
+ * <ul>
+ *   <li>Создание корневого и диспетчерского контекстов Spring</li>
+ *   <li>Регистрация DispatcherServlet для обработки REST запросов</li>
+ *   <li>Настройка фильтров (кодировка UTF-8, CORS)</li>
+ *   <li>Регистрация ресурсов Swagger</li>
+ * </ul>
+ *
+ * @see WebApplicationInitializer
+ * @see DispatcherServlet
  */
 public class WebAppInitializer implements WebApplicationInitializer {
 
+    /**
+     * Основной метод инициализации веб-приложения.
+     * Вызывается контейнером сервлетов при запуске приложения.
+     *
+     * @param servletContext контекст сервлета для настройки приложения
+     * @throws ServletException если произошла ошибка при инициализации
+     * @implNote Настраивает два контекста Spring: корневой и диспетчерский
+     */
     @Override
     public void onStartup(ServletContext servletContext) throws ServletException {
         System.out.println("=== Initializing Product Catalog Service ===");
 
-        // 1. Создаем корневой контекст Spring
+        // Создание корневого контекста Spring
         AnnotationConfigWebApplicationContext rootContext =
                 new AnnotationConfigWebApplicationContext();
         rootContext.register(AppConfig.class);
 
-        // 2. Добавляем слушатель для управления жизненным циклом контекста
         servletContext.addListener(new ContextLoaderListener(rootContext));
 
-        // 3. Создаем контекст для DispatcherServlet (для контроллеров)
+        // Создание контекста для DispatcherServlet
         AnnotationConfigWebApplicationContext dispatcherContext =
                 new AnnotationConfigWebApplicationContext();
         dispatcherContext.register(AppConfig.class);
 
-        // 4. Регистрируем DispatcherServlet
+        // Настройка DispatcherServlet
         DispatcherServlet dispatcherServlet = new DispatcherServlet(dispatcherContext);
         dispatcherServlet.setThrowExceptionIfNoHandlerFound(true);
 
@@ -54,7 +73,7 @@ public class WebAppInitializer implements WebApplicationInitializer {
         dispatcher.addMapping("/swagger-resources");
         dispatcher.addMapping("/csrf");
 
-        // 5. Настраиваем фильтр для UTF-8 кодировки
+        // Настройка фильтра кодировки UTF-8
         CharacterEncodingFilter encodingFilter = new CharacterEncodingFilter();
         encodingFilter.setEncoding("UTF-8");
         encodingFilter.setForceEncoding(true);
@@ -65,7 +84,7 @@ public class WebAppInitializer implements WebApplicationInitializer {
         );
         filterRegistration.addMappingForUrlPatterns(null, false, "/*");
 
-        // 6. Настраиваем CORS фильтр
+        // Настройка CORS фильтра
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
         config.addAllowedOrigin("*");

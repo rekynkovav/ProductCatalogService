@@ -10,9 +10,25 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Глобальный обработчик исключений для REST контроллеров.
+ * Обрабатывает исключения валидации и возвращает структурированные сообщения об ошибках.
+ *
+ * @apiNote Этот класс перехватывает исключения на уровне всех контроллеров
+ * @see ControllerAdvice
+ * @see ExceptionHandler
+ */
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+    /**
+     * Обрабатывает исключения валидации входных параметров.
+     * Возвращает карту с именами полей и сообщениями об ошибках.
+     *
+     * @param ex исключение MethodArgumentNotValidException, содержащее ошибки валидации
+     * @return ResponseEntity с картой ошибок и статусом HTTP 400 (BAD_REQUEST)
+     * @apiNote Формат ответа: {"fieldName": "error message", ...}
+     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
