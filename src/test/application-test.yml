@@ -1,0 +1,98 @@
+# Test Configuration
+spring:
+  application:
+    name: ProductCatalogService-Test
+
+  # H2 Database for Unit Tests
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+    hikari:
+      maximum-pool-size: 5
+
+  # JPA Configuration for Tests
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        generate_statistics: false
+        jdbc:
+          batch_size: 5
+
+  # Disable Liquibase for most tests
+  liquibase:
+    enabled: false
+
+  # Disable scheduled tasks
+  task:
+    scheduling:
+      enabled: false
+
+  # Disable unnecessary auto-configurations
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconsecurity.servlet.SecurityAutoConfiguration
+      - org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration
+
+# Server Configuration
+server:
+  port: 0  # Random port for tests
+  servlet:
+    context-path: /api
+
+# Disable Actuator for tests
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      enabled: true
+    metrics:
+      enabled: false
+
+# Logging Configuration for Tests
+logging:
+  level:
+    root: WARN
+    com.productcatalogservice: INFO
+    org.springframework: WARN
+    org.hibernate: ERROR
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+# Test-specific Properties
+test:
+  environment: unit-test
+  database:
+    init: true
+
+# Audit & Logging Configuration for Tests
+product-catalog:
+  audit:
+    enabled: true
+    logging:
+      enabled: false  # Disable logging in tests to reduce noise
+      entry-level: DEBUG
+      exit-level: DEBUG
+      exception-level: ERROR
+    operations:
+      enabled: false  # Disable audit operations in tests
+      create: false
+      update: false
+      delete: false
+      log-entity-content: false
+
+# OpenAPI Configuration for Tests
+springdoc:
+  api-docs:
+    enabled: false  # Disable OpenAPI in tests
+  swagger-ui:
+    enabled: false
