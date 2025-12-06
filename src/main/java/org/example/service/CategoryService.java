@@ -1,27 +1,37 @@
 package org.example.service;
 
+import org.example.dto.CategoryDTO;
+import org.example.dto.ProductDTO;
 import org.example.model.entity.Category;
 import org.example.model.entity.Product;
 import java.util.List;
 import java.util.Optional;
 
 /**
- * Сервисный слой для управления категориями товаров.
- * <p>
- * Определяет бизнес-логику работы с категориями, абстрагируя клиентский код
- * от деталей реализации репозитория. Сервис обеспечивает валидацию данных,
- * обработку исключений и трансформацию объектов при необходимости.
- * </p>
+ * Сервисный интерфейс для управления категориями товаров.
+ * Определяет контракт для работы с категориями, включая CRUD операции,
+ * работу с товарами внутри категорий и преобразование данных между слоями приложения.
+ *
+ * <p>Сервис разделен на две основные части:</p>
+ * <ul>
+ *   <li>Методы для работы с доменными объектами ({@link Category}, {@link Product})</li>
+ *   <li>Методы для работы с DTO ({@link CategoryDTO}, {@link ProductDTO}) и административные операции</li>
+ * </ul>
  *
  * <h3>Основные функции:</h3>
  * <ul>
- *   <li>Управление жизненным циклом категорий</li>
+ *   <li>Управление жизненным циклом категорий (CRUD)</li>
  *   <li>Поиск категорий по различным критериям</li>
  *   <li>Работа с товарами внутри категорий</li>
  *   <li>Валидация бизнес-правил для категорий</li>
+ *   <li>Контроль целостности данных при удалении категорий</li>
+ *   <li>Адаптация данных для клиентских приложений через DTO</li>
  * </ul>
  *
  * @see Category
+ * @see Product
+ * @see CategoryDTO
+ * @see ProductDTO
  * @see org.example.service.impl.CategoryServiceImpl
  * @see org.example.repository.CategoryRepository
  * @since 1.0
@@ -72,7 +82,6 @@ public interface CategoryService {
      * @return сохранённая категория с установленным идентификатором
      * @throws IllegalArgumentException если {@code category} равен {@code null}
      * @throws org.springframework.dao.DuplicateKeyException при попытке сохранить категорию с существующим названием
-     * @throws jakarta.validation.ConstraintViolationException если данные категории невалидны
      */
     Category save(Category category);
 
@@ -89,11 +98,12 @@ public interface CategoryService {
      * </p>
      *
      * @param id идентификатор категории для удаления
+     * @return true если категория была успешно удалена, false если категория не найдена
      * @throws IllegalArgumentException если {@code id} равен {@code null}
      * @throws org.springframework.dao.DataAccessException при ошибках доступа к данным
      * @throws IllegalStateException если категория содержит товары и не может быть удалена
      */
-    void deleteById(Long id);
+    boolean deleteById(Long id);
 
     /**
      * Находит все товары, принадлежащие указанной категории.
@@ -124,4 +134,57 @@ public interface CategoryService {
      * @throws IllegalArgumentException если {@code name} равен {@code null} или пуст
      */
     Optional<Category> findByName(String name);
+
+    /**
+     * Получает список всех категорий в формате DTO.
+     *
+     * @return список DTO категорий
+     */
+    List<CategoryDTO> getAllCategories();
+
+    /**
+     * Получает категорию по идентификатору в формате DTO.
+     *
+     * @param id идентификатор категории
+     * @return DTO категории
+     */
+    CategoryDTO getCategoryById(Long id);
+
+    /**
+     * Получает товары категории по идентификатору в формате DTO.
+     *
+     * @param categoryId идентификатор категории
+     * @return список DTO товаров указанной категории
+     */
+    List<ProductDTO> getProductsByCategoryIdDto(Long categoryId);
+
+    /**
+     * Создает новую категорию (административная операция).
+     *
+     * @param token токен авторизации администратора
+     * @param createCategory DTO с данными для создания категории
+     * @return DTO созданной категории
+     * @throws IllegalArgumentException если параметры некорректны
+     */
+    CategoryDTO createCategory(String token, CategoryDTO.CreateCategory createCategory);
+
+    /**
+     * Обновляет существующую категорию (административная операция).
+     *
+     * @param token токен авторизации администратора
+     * @param id идентификатор категории для обновления
+     * @param updateCategory DTO с данными для обновления категории
+     * @return DTO обновленной категории
+     */
+    CategoryDTO updateCategory(String token, Long id, CategoryDTO.UpdateCategory updateCategory);
+
+    /**
+     * Удаляет категорию (административная операция).
+     *
+     * @param token токен авторизации администратора
+     * @param id идентификатор категории для удаления
+     * @return true если категория была успешно удалена, false если категория не найдена
+     * @throws IllegalStateException если категория содержит товары и не может быть удалена
+     */
+    Boolean deleteCategory(String token, Long id);
 }

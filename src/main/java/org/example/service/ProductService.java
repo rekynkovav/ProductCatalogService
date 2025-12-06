@@ -1,26 +1,35 @@
 package org.example.service;
 
+import org.example.dto.ProductDTO;
+import org.example.dto.ProductPageDTO;
 import org.example.model.entity.Product;
 import java.util.List;
 import java.util.Optional;
 
 /**
- * Сервисный слой для управления товарами в каталоге.
- * <p>
- * Инкапсулирует бизнес-логику работы с товарами, включая валидацию,
- * обработку транзакций и применение бизнес-правил. Сервис обеспечивает
- * согласованность данных и обработку исключительных ситуаций.
- * </p>
+ * Сервисный интерфейс для управления товарами.
+ * Определяет контракт для работы с товарами в каталоге, включая CRUD операции,
+ * управление количеством и преобразование данных между слоями приложения.
+ *
+ * <p>Сервис разделен на две основные части:</p>
+ * <ul>
+ *   <li>Методы для работы с доменными объектами ({@link Product})</li>
+ *   <li>Методы для работы с DTO ({@link ProductDTO}) и административные операции</li>
+ * </ul>
  *
  * <h3>Ключевые возможности:</h3>
  * <ul>
  *   <li>Полное управление товарами (CRUD операции)</li>
  *   <li>Фильтрация товаров по категориям</li>
  *   <li>Контроль остатков товаров на складе</li>
+ *   <li>Пагинация товаров для оптимизации производительности</li>
  *   <li>Валидация данных и бизнес-правил</li>
+ *   <li>Адаптация данных для клиентских приложений через DTO</li>
  * </ul>
  *
  * @see Product
+ * @see ProductDTO
+ * @see ProductPageDTO
  * @see org.example.service.impl.ProductServiceImpl
  * @see org.example.repository.ProductRepository
  * @since 1.0
@@ -137,28 +146,97 @@ public interface ProductService {
     List<Product> findByCategoryId(Long categoryId);
 
     /**
-     * Мeтод для уменьшения количества товара в магазине при добавлении в корзину
+     * Уменьшает количество товара на складе.
+     * Используется при добавлении товара в корзину или оформлении заказа.
+     *
+     * @param productId идентификатор товара
+     * @param quantity количество для уменьшения (должно быть положительным)
+     * @return true если операция успешна, false если недостаточно товара на складе
+     * @throws IllegalArgumentException если параметры некорректны
      */
     boolean decreaseQuantity(Long productId, int quantity);
 
     /**
-     * Мeтод для уывеличения количества товара в магазине при удалении из корзины
+     * Увеличивает количество товара на складе.
+     * Используется при удалении товара из корзины или отмене заказа.
+     *
+     * @param productId идентификатор товара
+     * @param quantity количество для увеличения (должно быть положительным)
+     * @return true если операция успешна, false если товар не найден
+     * @throws IllegalArgumentException если параметры некорректны
      */
     boolean increaseQuantity(Long productId, int quantity);
 
     /**
      * Находит товары с пагинацией.
+     * Возвращает подмножество товаров для указанной страницы.
      *
      * @param page номер страницы (начинается с 0)
-     * @param size размер страницы
+     * @param size размер страницы (количество товаров на странице)
      * @return список товаров для указанной страницы
+     * @throws IllegalArgumentException если page < 0 или size <= 0
      */
     List<Product> findAllPaginated(int page, int size);
 
     /**
-     * Возвращает общее количество товаров.
+     * Возвращает общее количество товаров в каталоге.
      *
      * @return общее количество товаров в базе данных
      */
     Long count();
+
+    /**
+     * Получает страницу товаров в формате DTO.
+     * Включает информацию о пагинации (общее количество страниц, элементов и т.д.).
+     *
+     * @param page номер страницы (начинается с 0)
+     * @param size размер страницы
+     * @return DTO страницы товаров
+     * @throws IllegalArgumentException если параметры некорректны
+     */
+    ProductPageDTO getPaginatedProducts(int page, int size);
+
+    /**
+     * Получает товар по идентификатору в формате DTO.
+     *
+     * @param id идентификатор товара
+     * @return DTO товара
+     */
+    ProductDTO getProductById(Long id);
+
+    /**
+     * Получает товары по идентификатору категории в формате DTO.
+     *
+     * @param categoryId идентификатор категории
+     * @return список DTO товаров указанной категории
+     */
+    List<ProductDTO> getProductsByCategoryId(Long categoryId);
+
+    /**
+     * Создает новый товар (административная операция).
+     *
+     * @param token токен авторизации администратора
+     * @param createProduct DTO с данными для создания товара
+     * @return DTO созданного товара
+     * @throws IllegalArgumentException если параметры некорректны
+     */
+    ProductDTO createProduct(String token, ProductDTO.CreateProduct createProduct);
+
+    /**
+     * Обновляет существующий товар (административная операция).
+     *
+     * @param token токен авторизации администратора
+     * @param id идентификатор товара для обновления
+     * @param updateProduct DTO с данными для обновления
+     * @return DTO обновленного товара
+     */
+    ProductDTO updateProduct(String token, Long id, ProductDTO.UpdateProduct updateProduct);
+
+    /**
+     * Удаляет товар (административная операция).
+     *
+     * @param token токен авторизации администратора
+     * @param id идентификатор товара для удаления
+     */
+    void deleteProduct(String token, Long id);
 }

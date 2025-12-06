@@ -101,11 +101,12 @@ public interface CategoryRepository {
      * </p>
      *
      * @param id идентификатор категории для удаления
-     * @throws IllegalArgumentException если {@code id} равен {@code null}
-     * @throws org.springframework.dao.DataAccessException при ошибках доступа к данным
+     * @return
+     * @throws IllegalArgumentException                               если {@code id} равен {@code null}
+     * @throws org.springframework.dao.DataAccessException            при ошибках доступа к данным
      * @throws org.springframework.dao.EmptyResultDataAccessException если категория с указанным ID не найдена
      */
-    void deleteById(Long id);
+    boolean deleteById(Long id);
 
     /**
      * Проверяет существование категории по идентификатору.

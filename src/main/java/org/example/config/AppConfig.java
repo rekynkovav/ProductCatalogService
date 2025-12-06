@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.zaxxer.hikari.HikariConfig;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -49,23 +50,13 @@ import java.util.List;
 @EnableAspectJAutoProxy
 @PropertySource(value = "classpath:application.yml", factory = YamlPropertySourceFactory.class)
 @ComponentScan(basePackages = "org.example")
+@RequiredArgsConstructor
 public class AppConfig implements WebMvcConfigurer {
 
     /**
      * Окружение Spring для доступа к свойствам приложения.
      */
     private final Environment environment;
-
-    /**
-     * Конструктор конфигурационного класса.
-     *
-     * @param environment окружение Spring для работы с properties
-     */
-    @Autowired
-    public AppConfig(Environment environment) {
-        this.environment = environment;
-        System.out.println("=== AppConfig initialized ===");
-    }
 
     /**
      * Создает и настраивает источник данных (DataSource) с использованием HikariCP.

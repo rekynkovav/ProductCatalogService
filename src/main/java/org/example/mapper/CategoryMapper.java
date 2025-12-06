@@ -1,7 +1,9 @@
 package org.example.mapper;
 
 import org.example.dto.CategoryDTO;
+import org.example.dto.ProductDTO;
 import org.example.model.entity.Category;
+import org.example.model.entity.Product;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -64,4 +66,12 @@ public interface CategoryMapper {
      * @return список DTO объектов категорий
      */
     List<CategoryDTO> toDTOList(List<Category> categories);
+
+    /**
+     * Преобразует список сущностей Product в список ProductDTO.
+     *
+     * @param products список сущностей категорий
+     * @return список DTO объектов категорий
+     */
+    List<ProductDTO> toProductDTOList(List<Product> products);
 }

@@ -1,21 +1,32 @@
 package org.example.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.example.dto.ProductDTO;
+import org.example.dto.ProductPageDTO;
+import org.example.exception.AccessDeniedException;
+import org.example.exception.ResourceNotFoundException;
+import org.example.mapper.ProductMapper;
 import org.example.model.entity.Product;
+import org.example.model.entity.Role;
 import org.example.repository.ProductRepository;
 import org.example.service.ProductService;
+import org.example.util.AuthUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
+    private final ProductMapper productMapper;
+    private final AuthUtil authUtil;
 
     @Override
     public List<Product> findAll() {
@@ -65,5 +76,88 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Long count() {
         return productRepository.count();
+    }
+
+    @Override
+    public ProductPageDTO getPaginatedProducts(int page, int size) {
+        if (page < 0) {
+            page = 0;
+        }
+        if (size <= 0 || size > 100) {
+            size = 20;
+        }
+
+        List<Product> products = findAllPaginated(page, size);
+        long totalProducts = count();
+        long totalPages = (long) Math.ceil((double) totalProducts / size);
+
+        ProductPageDTO dto = new ProductPageDTO();
+        dto.setProducts(productMapper.toDTOList(products));
+        dto.setPage(page);
+        dto.setSize(size);
+        dto.setTotalProducts(totalProducts);
+        dto.setTotalPages(totalPages);
+        dto.setHasNext(page < totalPages - 1);
+        dto.setHasPrevious(page > 0);
+
+        return dto;
+    }
+    @Override
+    public ProductDTO getProductById(Long id) {
+        Product product = findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Товар", "id", id));
+        return productMapper.toDTO(product);
+    }
+
+    @Override
+    public List<ProductDTO> getProductsByCategoryId(Long categoryId) {
+        List<Product> products = findByCategoryId(categoryId);
+        return productMapper.toDTOList(products);
+    }
+
+    @Override
+    public ProductDTO createProduct(String token, ProductDTO.CreateProduct createProduct) {
+        checkAdminAccess(token);
+
+        Product product = productMapper.toEntity(createProduct);
+        Product savedProduct = save(product);
+
+        log.info("Товар создан: {} (ID: {})", savedProduct.getName(), savedProduct.getId());
+        return productMapper.toDTO(savedProduct);
+    }
+
+    @Override
+    public ProductDTO updateProduct(String token, Long id, ProductDTO.UpdateProduct updateProduct) {
+        checkAdminAccess(token);
+
+        Product existingProduct = findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Товар", "id", id));
+
+        productMapper.updateEntityFromDTO(updateProduct, existingProduct);
+        existingProduct.setId(id);
+
+        Product updatedProduct = save(existingProduct);
+
+        log.info("Товар обновлен: {} (ID: {})", updatedProduct.getName(), updatedProduct.getId());
+        return productMapper.toDTO(updatedProduct);
+    }
+
+    @Override
+    public void deleteProduct(String token, Long id) {
+        checkAdminAccess(token);
+
+        if (!existsById(id)) {
+            throw new ResourceNotFoundException("Товар", "id", id);
+        }
+
+        deleteById(id);
+        log.info("Товар удален: ID: {}", id);
+    }
+
+    private void checkAdminAccess(String token) {
+        org.example.model.entity.User user = authUtil.getUserByToken(token);
+        if (user == null || !Role.ADMIN.equals(user.getRole())) {
+            throw new AccessDeniedException("Доступ запрещен. Требуется роль ADMIN");
+        }
     }
 }

@@ -95,4 +95,6 @@ public interface UserMapper {
      */
     @Mapping(target = "username", source = "userName")
     UserDTO.UserInfo toUserInfo(User user);
+
+    User toEntity(UserDTO.RegisterRequest request);
 }

@@ -96,8 +96,9 @@ public class CategoryRepositoryImpl implements CategoryRepository {
     }
 
     @Override
-    public void deleteById(Long id) {
-        jdbcTemplate.update(DELETE, id);
+    public boolean deleteById(Long id) {
+        int rowsAffected = jdbcTemplate.update(DELETE, id);
+        return rowsAffected > 0;
     }
 
     @Override
