@@ -23,6 +23,15 @@
                 cacheSize="50"/>
     </changeSet>
 
+    <changeSet id="create-category-seq" author="Y_Lab_student">
+        <createSequence
+                sequenceName="category_id_seq"
+                schemaName="service"
+                startValue="1"
+                incrementBy="1"
+                cacheSize="50"/>
+    </changeSet>
+
     <changeSet id="create-audit-logs-seq" author="Y_Lab_student">
         <createSequence
                 sequenceName="audit_logs_seq"

@@ -3,8 +3,8 @@ package org.example.repository;
 import org.example.model.entity.Product;
 import org.example.model.entity.User;
 
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -86,9 +86,5 @@ public interface UserRepository {
      * @param userId идентификатор пользователя
      * @return карта товаров в корзине (ключ - ID товара, значение - товар)
      */
-    HashMap<Long, Product> getBasket(Long userId);
-    /**
-     *удаляет всех пользователей
-     */
-    void deleteAllUser();
+    Map<Long, Product> getBasket(Long userId);
 }

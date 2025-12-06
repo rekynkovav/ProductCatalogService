@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <changeSet id="create-aspect-seq" author="Y_Lab_student">
+        <createSequence
+                sequenceName="aspect_logs_seq"
+                schemaName="service"
+                startValue="1"
+                incrementBy="1"
+                cacheSize="1000"/>
+
+        <createSequence
+                sequenceName="performance_metrics_seq"
+                schemaName="service"
+                startValue="1"
+                incrementBy="1"
+                cacheSize="1000"/>
+    </changeSet>
+
+    <changeSet id="create-aspect-logs-table" author="Y_Lab_student">
+        <createTable tableName="aspect_logs" schemaName="entity">
+            <column name="id" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="aspect_type" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="method_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="class_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="execution_time" type="BIGINT">
+                <constraints nullable="true"/>
+            </column>
+            <column name="status" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="arguments" type="TEXT">
+                <constraints nullable="true"/>
+            </column>
+            <column name="result" type="TEXT">
+                <constraints nullable="true"/>
+            </column>
+            <column name="error_message" type="TEXT">
+                <constraints nullable="true"/>
+            </column>
+            <column name="stack_trace" type="TEXT">
+                <constraints nullable="true"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="true"
+                             foreignKeyName="fk_aspect_logs_user"
+                             references="entity.users(id)"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <sql>ALTER TABLE entity.aspect_logs ALTER COLUMN id SET DEFAULT nextval('service.aspect_logs_seq')</sql>
+    </changeSet>
+
+    <changeSet id="create-performance-metrics-table" author="Y_Lab_student">
+        <createTable tableName="performance_metrics" schemaName="entity">
+            <column name="id" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="service_name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="method_name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="avg_execution_time" type="DOUBLE PRECISION">
+                <constraints nullable="false" />
+            </column>
+            <column name="min_execution_time" type="BIGINT">
+                <constraints nullable="false" />
+            </column>
+            <column name="max_execution_time" type="BIGINT">
+                <constraints nullable="false" />
+            </column>
+            <column name="total_calls" type="BIGINT">
+                <constraints nullable="false" />
+            </column>
+            <column name="success_count" type="BIGINT">
+                <constraints nullable="false" />
+            </column>
+            <column name="error_count" type="BIGINT">
+                <constraints nullable="false" />
+            </column>
+            <column name="last_call_time" type="TIMESTAMP">
+                <constraints nullable="true"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <sql>ALTER TABLE entity.performance_metrics ALTER COLUMN id SET DEFAULT nextval('service.performance_metrics_seq')</sql>
+
+        <addUniqueConstraint tableName="performance_metrics" schemaName="entity"
+                             columnNames="service_name, method_name"
+                             constraintName="uq_performance_metrics_service_method"/>
+    </changeSet>
+
+    <changeSet id="create-cache-table" author="Y_Lab_student">
+        <createTable tableName="cache_data" schemaName="entity">
+            <column name="cache_key" type="VARCHAR(512)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="cache_value" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="cache_type" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="expiration_time" type="TIMESTAMP">
+                <constraints nullable="true"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_accessed" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="access_count" type="INTEGER" defaultValue="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="create-aspect-config-table" author="Y_Lab_student">
+        <createTable tableName="aspect_config" schemaName="entity">
+            <column name="aspect_name" type="VARCHAR(100)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="enabled" type="BOOLEAN" defaultValue="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="log_level" type="VARCHAR(20)" defaultValue="INFO">
+                <constraints nullable="false"/>
+            </column>
+            <column name="threshold_ms" type="BIGINT" defaultValue="1000">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_by" type="VARCHAR(100)">
+                <constraints nullable="true"/>
+            </column>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

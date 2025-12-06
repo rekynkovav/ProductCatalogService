@@ -14,6 +14,6 @@
     </changeSet>
 
     <changeSet id="set-search-path" author="Y_Lab_student">
-        <sql>SET search_path TO entity, service, public;</sql>
+        <sql>SET search_path TO entity, service;</sql>
     </changeSet>
 </databaseChangeLog>

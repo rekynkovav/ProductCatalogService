@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <changeSet id="insert-aspect-configs" author="Y_Lab_student">
+        <insert tableName="aspect_config" schemaName="entity">
+            <column name="aspect_name" value="LOGGING_ASPECT"/>
+            <column name="enabled" value="true"/>
+            <column name="log_level" value="INFO"/>
+            <column name="threshold_ms" value="500"/>
+        </insert>
+
+        <insert tableName="aspect_config" schemaName="entity">
+            <column name="aspect_name" value="METRICS_ASPECT"/>
+            <column name="enabled" value="true"/>
+            <column name="log_level" value="INFO"/>
+            <column name="threshold_ms" value="1000"/>
+        </insert>
+
+        <insert tableName="aspect_config" schemaName="entity">
+            <column name="aspect_name" value="AUDIT_ASPECT"/>
+            <column name="enabled" value="true"/>
+            <column name="log_level" value="INFO"/>
+            <column name="threshold_ms" value="2000"/>
+        </insert>
+
+        <insert tableName="aspect_config" schemaName="entity">
+            <column name="aspect_name" value="CACHE_ASPECT"/>
+            <column name="enabled" value="true"/>
+            <column name="log_level" value="DEBUG"/>
+            <column name="threshold_ms" value="100"/>
+        </insert>
+
+        <insert tableName="aspect_config" schemaName="entity">
+            <column name="aspect_name" value="SECURITY_ASPECT"/>
+            <column name="enabled" value="true"/>
+            <column name="log_level" value="WARN"/>
+            <column name="threshold_ms" value="300"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="add-login-count-to-users" author="Y_Lab_student">
+        <addColumn tableName="users" schemaName="entity">
+            <column name="login_count" type="INTEGER" defaultValue="0">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="add-update-count-to-products" author="Y_Lab_student">
+        <addColumn tableName="products" schemaName="entity">
+            <column name="update_count" type="INTEGER" defaultValue="0">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="insert-aop-metrics" author="Y_Lab_student">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="users" schemaName="entity"/>
+            <tableExists tableName="user_metrics" schemaName="entity"/>
+        </preConditions>
+
+        <sql>
+            INSERT INTO entity.user_metrics (user_id, metric_type, value)
+            SELECT u.id, 'ASPECT_LOG_COUNT', 0 FROM entity.users u
+                ON CONFLICT (user_id, metric_type) DO NOTHING;
+
+            INSERT INTO entity.user_metrics (user_id, metric_type, value)
+            SELECT u.id, 'CACHE_HIT_COUNT', 0 FROM entity.users u
+                ON CONFLICT (user_id, metric_type) DO NOTHING;
+
+            INSERT INTO entity.user_metrics (user_id, metric_type, value)
+            SELECT u.id, 'CACHE_MISS_COUNT', 0 FROM entity.users u
+                ON CONFLICT (user_id, metric_type) DO NOTHING;
+
+            INSERT INTO entity.user_metrics (user_id, metric_type, value)
+            SELECT u.id, 'SLOW_METHOD_COUNT', 0 FROM entity.users u
+                ON CONFLICT (user_id, metric_type) DO NOTHING;
+        </sql>
+    </changeSet>
+</databaseChangeLog>

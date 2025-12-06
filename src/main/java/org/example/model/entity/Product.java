@@ -1,196 +1,103 @@
 package org.example.model.entity;
 
-import java.util.Objects;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * Модель товара магазина.
+ * <p>
  * Представляет продукт с основными характеристиками: название, количество, цена, категория.
- * Реализует интерфейс Serializable для поддержки сериализации.
+ * Используется в каталоге товаров, корзинах пользователей и заказах.
+ * Все экземпляры являются immutable после создания, за исключением обновления через сеттеры.
+ * </p>
+ *
+ * <h3>Валидация:</h3>
+ * <ul>
+ *   <li>Название товара обязательно</li>
+ *   <li>Количество и цена не могут быть отрицательными</li>
+ *   <li>Категория должна быть указана</li>
+ * </ul>
+ *
+ * @see Category
+ * @since 1.0
  */
-public class Product{
+@Getter
+@Setter
+@NoArgsConstructor
+public class Product {
 
     /**
      * Уникальный идентификатор товара.
+     * <p>
+     * Генерируется автоматически при сохранении в базу данных.
+     * Используется как первичный ключ в таблице товаров.
+     * </p>
      */
     private Long id;
 
     /**
      * Название товара.
+     * <p>
+     * Должно быть уникальным в пределах каталога (бизнес-правило).
+     * Используется для поиска и отображения товаров.
+     * </p>
      */
+    @NotBlank(message = "Название товара обязательно")
     private String name;
 
     /**
      * Количество товара в наличии.
+     * <p>
+     * Указывает на доступное количество единиц товара на складе.
+     * Используется для контроля остатков и предотвращения продажи
+     * отсутствующего товара.
+     * </p>
      */
+    @Min(value = 0, message = "Количество товара не может быть отрицательным")
     private int quantity;
 
     /**
-     * Цена товара.
+     * Цена товара в минимальных единицах валюты (копейки, центы).
+     * <p>
+     * Хранится как целое число для избежания ошибок округления.
+     * Для отображения может быть преобразована в дробное значение.
+     * </p>
      */
+    @Min(value = 0, message = "Цена товара не может быть отрицательной")
     private int price;
 
     /**
-     * Категория товара.
+     * Идентификатор категории товара.
+     * <p>
+     * Внешний ключ на таблицу категорий. Определяет принадлежность
+     * товара к определенной группе для организации каталога.
+     * </p>
      */
-    private Category category;
+    @NotNull(message = "ID категории обязательно")
+    private Long categoryId;
 
     /**
-     * Конструктор по умолчанию.
-     */
-    public Product() {
-    }
-
-    /**
-     * Конструктор с параметрами.
+     * Создает новый товар с указанными параметрами.
+     * <p>
+     * Конструктор используется для создания товара перед сохранением в базу.
+     * Идентификатор {@code id} устанавливается в {@code null} и будет
+     * сгенерирован при сохранении.
+     * </p>
      *
-     * @param name     название товара
-     * @param quantity количество товара
-     * @param price    цена товара
-     * @param category категория товара
+     * @param name название товара (не может быть {@code null} или пустым)
+     * @param quantity количество товара (неотрицательное число)
+     * @param price цена товара (неотрицательное число)
+     * @param categoryId идентификатор категории (не может быть {@code null})
+     * @throws IllegalArgumentException если любой из параметров невалиден
      */
-    public Product(String name, int quantity, int price, Category category) {
+    public Product(String name, int quantity, int price, Long categoryId) {
         this.name = name;
         this.quantity = quantity;
         this.price = price;
-        this.category = category;
-    }
-
-    /**
-     * Возвращает идентификатор товара.
-     *
-     * @return идентификатор товара
-     */
-    public Long getId() {
-        return id;
-    }
-
-    /**
-     * Устанавливает идентификатор товара.
-     *
-     * @param id идентификатор товара
-     */
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    /**
-     * Возвращает название товара.
-     *
-     * @return название товара
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * Устанавливает название товара.
-     *
-     * @param name название товара
-     */
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    /**
-     * Возвращает количество товара.
-     *
-     * @return количество товара
-     */
-    public int getQuantity() {
-        return quantity;
-    }
-
-    /**
-     * Устанавливает количество товара.
-     *
-     * @param quantity количество товара
-     */
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
-    }
-
-    /**
-     * Возвращает цену товара.
-     *
-     * @return цена товара
-     */
-    public int getPrice() {
-        return price;
-    }
-
-    /**
-     * Устанавливает цену товара.
-     *
-     * @param price цена товара
-     */
-    public void setPrice(int price) {
-        this.price = price;
-    }
-
-    /**
-     * Возвращает категорию товара.
-     *
-     * @return категория товара
-     */
-    public Category getCategory() {
-        return category;
-    }
-
-    /**
-     * Устанавливает категорию товара.
-     *
-     * @param category категория товара
-     */
-    public void setCategory(Category category) {
-        this.category = category;
-    }
-
-    /**
-     * Уменьшает количество товара на указанное значение.
-     *
-     * @param amount количество для вычитания
-     */
-    public void subtractQuantity(int amount) {
-        this.quantity -= amount;
-    }
-
-    /**
-     * Увеличивает количество товара на указанное значение.
-     *
-     * @param amount количество для добавления
-     */
-    public void addQuantity(int amount) {
-        this.quantity += amount;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Product product = (Product) o;
-        return Objects.equals(id, product.id);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public int hashCode() {
-        return Objects.hash(name, quantity, price, category);
-    }
-
-    /**
-     * Возвращает строковое представление товара.
-     *
-     * @return строка с информацией о товаре
-     */
-    @Override
-    public String toString() {
-        return name +
-               ", количество: " + quantity + " шт" +
-               ", цена: " + price;
+        this.categoryId = categoryId;
     }
 }

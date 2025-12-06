@@ -2,24 +2,28 @@ version: '3.8'
 services:
   postgres:
     image: postgres:latest
+    container_name: productcatalog-postgres
     environment:
       POSTGRES_PASSWORD: productcatalog
       POSTGRES_USER: productcatalog
       POSTGRES_DB: productcatalog
     ports:
-      - "5433:5432"
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./init_productcatalog.sh:/docker-entrypoint-initdb.d/init_productcatalog.sh
 
-  liquibase:
-    image: liquibase/liquibase
-    depends_on:
-      - postgres
-    volumes:
-    - ./main/resources/db/changelog:/liquibase/changelog
-    - ./main/resources/liquibase.properties:/liquibase/liquibase.properties
-    working_dir: /resource
-    command: --defaults-file=resource/liquibase.properties update
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U productcatalog -d productcatalog" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - productcatalog-network
 
 volumes:
   postgres_data:
+
+networks:
+  productcatalog-network:
+    driver: bridge

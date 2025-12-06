@@ -9,5 +9,7 @@
         <include file="/db/changelog/changes/002-create-sequences.xml"/>
         <include file="/db/changelog/changes/003-create-tables.xml"/>
         <include file="/db/changelog/changes/004-insert-initial-data.xml"/>
-        <include file="/db/changelog/changes/005-create-metrics-table.xml"/>
+        <include file="/db/changelog/changes/005-create-aop-tables.xml"/>
+        <include file="/db/changelog/changes/006-create-aop-indexes.xml"/>
+        <include file="/db/changelog/changes/007-insert-aop-data.xml"/>
 </databaseChangeLog>

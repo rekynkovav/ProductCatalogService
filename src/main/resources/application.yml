@@ -1,0 +1,33 @@
+database:
+  url: jdbc:postgresql://localhost:5432/productcatalog?search_path=entity,service,public
+  username: productcatalog
+  password: productcatalog
+  driver: org.postgresql.Driver
+  maxPoolSize: 10
+
+liquibase:
+  enabled: true
+  change-log: db/changelog/db.changelog-master.xml
+  default-schema: service
+
+server:
+  servlet:
+    context-path: /ProductCatalogService-1.0-SNAPSHOT
+  port: 8080
+
+logging:
+  level:
+    org.example: DEBUG
+    liquibase: INFO
+    org.springframework.jdbc.core.JdbcTemplate: DEBUG
+
+aspect:
+  logging:
+    enabled: true
+    threshold-ms: 1000
+  metrics:
+    enabled: true
+    retention-days: 30
+  cache:
+    enabled: true
+    ttl-minutes: 15
