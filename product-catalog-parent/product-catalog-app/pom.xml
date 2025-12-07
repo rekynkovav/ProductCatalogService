@@ -13,6 +13,7 @@
 
     <artifactId>product-catalog-app</artifactId>
     <packaging>jar</packaging>
+    <name>Product Catalog Application</name>
 
     <dependencies>
         <!-- Spring Boot Starters -->
@@ -62,13 +63,13 @@
         <!-- Audit & Logging Starters -->
         <dependency>
             <groupId>com.productcatalogservice</groupId>
-            <artifactId>audit-logging-autoconfig</artifactId>
+            <artifactId>audit-logging-starter</artifactId>
             <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.productcatalogservice</groupId>
-            <artifactId>audit-logging-annotation</artifactId>
+            <artifactId>audit-logging-annotation-starter</artifactId>
             <version>${project.version}</version>
         </dependency>
 

@@ -14,9 +14,8 @@
 
     <!-- МОДУЛИ -->
     <modules>
-        <module>product-catalog-service</module>
-        <module>audit-logging-starter</module>
-        <module>audit-logging-annotation-starter</module>
+        <module>product-catalog-parent/audit-logging-annotation</module>
+        <module>product-catalog-parent/audit-logging-autoconfig</module>
     </modules>
 
     <properties>
