@@ -20,7 +20,7 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @ConditionalOnClass({AuditAspect.class, LoggingAspect.class})
-@EnableConfigurationProperties(com.productcatalogservice.audit.autoconfig.config.AuditProperties.class)
+@EnableConfigurationProperties(AuditProperties.class)
 public class AuditAutoConfiguration {
 
     /**
