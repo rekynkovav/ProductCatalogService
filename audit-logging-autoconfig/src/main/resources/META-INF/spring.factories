@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-com.productcatalogservice.audit.autoconfig.config.AuditAutoConfiguration
+com.productCatalogService.audit.autoconfig.config.AuditAutoConfiguration

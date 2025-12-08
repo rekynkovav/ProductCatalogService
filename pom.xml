@@ -5,7 +5,7 @@
          http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.productcatalogservice</groupId>
+    <groupId>com.productCatalogService</groupId>
     <artifactId>product-catalog-service</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
@@ -23,25 +23,26 @@
         <springdoc-openapi.version>2.2.0</springdoc-openapi.version>
         <lombok.version>1.18.30</lombok.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
-        <hibernate-validator.version>8.0.1.Final</hibernate-validator.version>
+        <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
+        <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
+        <jakarta.servlet-api.version>6.2.0-M1</jakarta.servlet-api.version>
     </properties>
 
     <modules>
-        <module>audit-logging-annotation/audit-logging-annotation-pom.xml</module>
-        <module>audit-logging-autoconfig/audit-logging-autoconfig-pom.xml</module>
-        <module>product-catalog-app/product-catalog-app-pom.xml</module>
+        <module>audit-logging-annotation</module>
+        <module>audit-logging-autoconfig</module>
+        <module>product-catalog-app</module>
+        <module>swagger-springdoc-starter</module>
     </modules>
 
     <dependencyManagement>
         <dependencies>
-            <!-- SpringDoc OpenAPI -->
             <dependency>
                 <groupId>org.springdoc</groupId>
                 <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
                 <version>${springdoc-openapi.version}</version>
             </dependency>
 
-            <!-- MapStruct -->
             <dependency>
                 <groupId>org.mapstruct</groupId>
                 <artifactId>mapstruct</artifactId>
@@ -49,18 +50,23 @@
             </dependency>
 
             <dependency>
-                <groupId>com.productcatalogservice</groupId>
+                <groupId>com.productCatalogService</groupId>
                 <artifactId>audit-logging-autoconfig</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
-                <groupId>com.productcatalogservice</groupId>
+                <groupId>com.productCatalogService</groupId>
                 <artifactId>audit-logging-annotation</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
-           <!-- Spring Web -->
+            <dependency>
+                <groupId>com.productCatalogService</groupId>
+                <artifactId>swagger-springdoc-starter</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-web</artifactId>

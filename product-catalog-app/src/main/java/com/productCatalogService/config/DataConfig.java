@@ -1,0 +1,13 @@
+package com.productCatalogService.config;
+
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+@Configuration
+@EnableJpaRepositories(basePackages = "com.productCatalogService.repository")
+@EntityScan(basePackages = "com.productcatalogservice.model")
+@EnableTransactionManagement
+public class DataConfig {
+}

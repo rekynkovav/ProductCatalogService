@@ -76,15 +76,12 @@ management:
 
 # Application Properties
 application:
-  version: 1.0.0
+  version: 1.0.5
 
 # Logging Configuration
 logging:
   level:
-    org.example: ${LOG_LEVEL:INFO}
-    org.springframework.web: ${SPRING_WEB_LOG_LEVEL:INFO}
-    org.hibernate.SQL: ${HIBERNATE_SQL_LOG_LEVEL:DEBUG}
-    org.hibernate.type.descriptor.sql: ${HIBERNATE_TYPE_LOG_LEVEL:TRACE}
+    com.productCatalogService: DEBUG
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %-5level - %logger{36} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
@@ -124,5 +121,5 @@ springdoc:
     default-model-rendering: example
     doc-expansion: none
     try-it-out-enabled: true
-  packages-to-scan: com.productcatalogservice.controller
+  packages-to-scan: com.productCatalogService.controller
   paths-to-match: /api/**
