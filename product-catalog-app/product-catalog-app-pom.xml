@@ -45,7 +45,6 @@
             <groupId>org.liquibase</groupId>
             <artifactId>liquibase-core</artifactId>
         </dependency>
-
         <!-- ===== AUDIT & LOGGING STARTERS ===== -->
         <!-- 1. Автоматический стартер (подключается автоматически) -->
         <dependency>
@@ -76,10 +75,11 @@
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
-            <version>8.0.1.Final</version>
+            <version>${hibernate-validator.version}</version>
         </dependency>
 
         <!-- ===== TESTING ===== -->
