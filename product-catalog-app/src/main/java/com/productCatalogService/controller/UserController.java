@@ -16,7 +16,7 @@ import java.util.Map;
  * Все операции требуют наличия валидного токена авторизации в заголовке запроса.
  */
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/user")
 @RequiredArgsConstructor
 public class UserController {
 

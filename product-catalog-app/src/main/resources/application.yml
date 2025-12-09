@@ -11,7 +11,7 @@ spring:
   # Database Configuration (PostgreSQL)
   # ===============================
   datasource:
-    url: jdbc:postgresql://localhost:5432/product_catalog_db?currentSchema=app_schema&search_path=app_schema,service_schema
+    url: jdbc:postgresql://localhost:5432/productcatalog?currentSchema=app_schema&search_path=app_schema,service_schema
     username: productcatalog
     password: productcatalog
     driver-class-name: org.postgresql.Driver
@@ -30,7 +30,7 @@ spring:
   # Liquibase Configuration
   # ===============================
   liquibase:
-    enabled: true
+    enabled:  false
     change-log: classpath:db/changelog/changelog-master.yaml
     default-schema: app_schema
     liquibase-schema: service_schema

@@ -16,7 +16,7 @@ import java.util.List;
  * Доступен всем пользователям без авторизации.
  */
 @RestController
-@RequestMapping("/api/products")
+@RequestMapping("/products")
 @RequiredArgsConstructor
 public class ProductController {
 

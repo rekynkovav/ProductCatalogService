@@ -21,7 +21,7 @@ import java.util.Map;
  * Предоставляет REST API для регистрации, входа, выхода и проверки существования пользователей.
  */
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
