@@ -1,0 +1,46 @@
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+  # ===============================
+  # Database Configuration для Docker
+  # ===============================
+  datasource:
+    url: jdbc:postgresql://postgres:5432/productcatalog
+    username: productcatalog
+    password: productcatalog
+    driver-class-name: org.postgresql.Driver
+
+    # Hikari Connection Pool Configuration
+    hikari:
+      connection-timeout: 30000
+      maximum-pool-size: 10
+      minimum-idle: 5
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      connection-init-sql: SET search_path TO app_schema, service_schema, public
+
+  # ===============================
+  # JPA Configuration
+  # ===============================
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: app_schema
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          lob:
+            non_contextual_creation: true
+
+  # ===============================
+  # Liquibase Configuration
+  # ===============================
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog/changelog-master.yaml
+    liquibase-schema: public
+    default-schema: public
+    contexts: docker

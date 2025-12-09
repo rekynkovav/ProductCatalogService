@@ -1,16 +1,13 @@
 databaseChangeLog:
   - include:
-      file: changesets/001-create-tables.yaml
+      file: changesets/001-create-tables.sql
       relativeToChangelogFile: true
-
   - include:
-      file: changesets/002-create-sequences.yaml
+      file: changesets/002-create-sequences.sql
       relativeToChangelogFile: true
-
   - include:
-      file: changesets/003-create-indexes.yaml
+      file: changesets/003-create-indexes.sql
       relativeToChangelogFile: true
-
   - include:
-      file: changesets/004-insert-initial-data.yaml
+      file: changesets/004-insert-initial-data.sql
       relativeToChangelogFile: true
