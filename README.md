@@ -1,4 +1,4 @@
-запускать через обычный main? или docker-compose 
+запускать через обычный main! или docker-compose 
 доступные ендпоинты:
 
 http://localhost:8080/api/v3/api-docs
