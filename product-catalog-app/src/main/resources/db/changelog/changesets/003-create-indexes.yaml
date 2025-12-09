@@ -1,0 +1,60 @@
+# changesets/003-create-indexes.yaml
+databaseChangeLog:
+  - changeSet:
+      id: create-product-indexes
+      author: dev
+      changes:
+        - createIndex:
+            tableName: products
+            schemaName: app_schema
+            indexName: idx_product_name
+            columns:
+              - column:
+                  name: name
+        - createIndex:
+            tableName: products
+            schemaName: app_schema
+            indexName: idx_product_category_id
+            columns:
+              - column:
+                  name: category_id
+        - createIndex:
+            tableName: products
+            schemaName: app_schema
+            indexName: idx_product_price
+            columns:
+              - column:
+                  name: price
+
+  - changeSet:
+      id: create-user-indexes
+      author: dev
+      changes:
+        - createIndex:
+            tableName: users
+            schemaName: app_schema
+            indexName: idx_user_username
+            unique: true
+            columns:
+              - column:
+                  name: username
+        - createIndex:
+            tableName: users
+            schemaName: app_schema
+            indexName: idx_user_role
+            columns:
+              - column:
+                  name: role
+
+  - changeSet:
+      id: create-category-indexes
+      author: dev
+      changes:
+        - createIndex:
+            tableName: categories
+            schemaName: app_schema
+            indexName: idx_category_name
+            unique: true
+            columns:
+              - column:
+                  name: name

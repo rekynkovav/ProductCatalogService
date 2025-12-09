@@ -1,0 +1,95 @@
+# changesets/004-insert-initial-data.yaml
+databaseChangeLog:
+  - changeSet:
+      id: insert-initial-categories
+      author: admin
+      changes:
+        - insert:
+            tableName: categories
+            schemaName: app_schema
+            columns:
+              - column:
+                  name: name
+                  value: Электроника
+        - insert:
+            tableName: categories
+            schemaName: app_schema
+            columns:
+              - column:
+                  name: name
+                  value: Одежда
+        - insert:
+            tableName: categories
+            schemaName: app_schema
+            columns:
+              - column:
+                  name: name
+                  value: Книги
+        - insert:
+            tableName: categories
+            schemaName: app_schema
+            columns:
+              - column:
+                  name: name
+                  value: Продукты питания
+
+  - changeSet:
+      id: insert-initial-products
+      author: admin
+      changes:
+        - sql:
+            sql: |
+              INSERT INTO app_schema.products (name, quantity, price, category_id)
+              VALUES 
+                ('Смартфон Samsung Galaxy', 50, 29999, 
+                 (SELECT id FROM app_schema.categories WHERE name = 'Электроника')),
+                ('Ноутбук Lenovo ThinkPad', 30, 89999, 
+                 (SELECT id FROM app_schema.categories WHERE name = 'Электроника')),
+                ('Футболка мужская', 100, 1999, 
+                 (SELECT id FROM app_schema.categories WHERE name = 'Одежда')),
+                ('Джинсы женские', 75, 3499, 
+                 (SELECT id FROM app_schema.categories WHERE name = 'Одежда')),
+                ('Война и мир (Л.Н. Толстой)', 40, 599, 
+                 (SELECT id FROM app_schema.categories WHERE name = 'Книги')),
+                ('Мастер и Маргарита (М.А. Булгаков)', 35, 499, 
+                 (SELECT id FROM app_schema.categories WHERE name = 'Книги')),
+                ('Хлеб ржаной', 200, 89, 
+                 (SELECT id FROM app_schema.categories WHERE name = 'Продукты питания')),
+                ('Молоко 3,2%', 150, 99, 
+                 (SELECT id FROM app_schema.categories WHERE name = 'Продукты питания'));
+            endDelimiter: ;
+
+  - changeSet:
+      id: insert-initial-users
+      author: admin
+      changes:
+        - insert:
+            tableName: users
+            schemaName: app_schema
+            columns:
+              name: username
+              value: admin
+            columns:
+              name: password
+              value: $2a$12$ABC123def456ghi789jkl0
+            columns:
+              name: role
+              value: ADMIN
+            columns:
+              name: basket
+              value: '{}'
+        - insert:
+            tableName: users
+            schemaName: app_schema
+            columns:
+              name: username
+              value: user1
+            columns:
+              name: password
+              value: $2a$12$xyz789abc456def123ghi0
+            columns:
+              name: role
+              value: USER
+            columns:
+              name: basket
+              value: '{}'

@@ -1,0 +1,55 @@
+# changesets/002-create-sequences.yaml
+databaseChangeLog:
+  - changeSet:
+      id: create-sequence-schema
+      author: dev
+      changes:
+        - sql:
+            sql: CREATE SCHEMA IF NOT EXISTS seq_schema;
+            endDelimiter: ;
+
+  - changeSet:
+      id: create-categories-sequence
+      author: dev
+      changes:
+        - createSequence:
+            sequenceName: categories_id_seq
+            schemaName: seq_schema
+            startValue: 1
+            incrementBy: 1
+
+  - changeSet:
+      id: create-products-sequence
+      author: dev
+      changes:
+        - createSequence:
+            sequenceName: products_id_seq
+            schemaName: seq_schema
+            startValue: 1
+            incrementBy: 1
+
+  - changeSet:
+      id: create-users-sequence
+      author: dev
+      changes:
+        - createSequence:
+            sequenceName: users_id_seq
+            schemaName: seq_schema
+            startValue: 1
+            incrementBy: 1
+
+  - changeSet:
+      id: set-default-values-from-sequences
+      author: dev
+      changes:
+        - sql:
+            sql: |
+              ALTER TABLE app_schema.categories 
+              ALTER COLUMN id SET DEFAULT nextval('seq_schema.categories_id_seq');
+              
+              ALTER TABLE app_schema.products 
+              ALTER COLUMN id SET DEFAULT nextval('seq_schema.products_id_seq');
+              
+              ALTER TABLE app_schema.users 
+              ALTER COLUMN id SET DEFAULT nextval('seq_schema.users_id_seq');
+            endDelimiter: ;

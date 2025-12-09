@@ -1,0 +1,125 @@
+# changesets/001-create-tables.yaml
+databaseChangeLog:
+  - changeSet:
+      id: create-app-schema
+      author: dev
+      changes:
+        - sql:
+            sql: CREATE SCHEMA IF NOT EXISTS app_schema;
+            endDelimiter: ;
+
+  - changeSet:
+      id: create-categories-table
+      author: dev
+      changes:
+        - createTable:
+            tableName: categories
+            schemaName: app_schema
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+
+  - changeSet:
+      id: create-products-table
+      author: dev
+      changes:
+        - createTable:
+            tableName: products
+            schemaName: app_schema
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: quantity
+                  type: INTEGER
+                  defaultValue: 0
+                  constraints:
+                    nullable: false
+              - column:
+                  name: price
+                  type: INTEGER
+                  constraints:
+                    nullable: false
+              - column:
+                  name: category_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_product_category
+                    references: app_schema.categories(id)
+
+  - changeSet:
+      id: create-users-table
+      author: dev
+      changes:
+        - createTable:
+            tableName: users
+            schemaName: app_schema
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: username
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: password
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: role
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: basket
+                  type: JSONB
+
+  - changeSet:
+      id: add-check-constraints
+      author: dev
+      changes:
+        - addCheckConstraint:
+            tableName: products
+            schemaName: app_schema
+            columnName: quantity
+            constraintName: ck_product_quantity_non_negative
+            constraintBody: quantity >= 0
+        - addCheckConstraint:
+            tableName: products
+            schemaName: app_schema
+            columnName: price
+            constraintName: ck_product_price_non_negative
+            constraintBody: price >= 0
+        - addCheckConstraint:
+            tableName: users
+            schemaName: app_schema
+            columnName: role
+            constraintName: ck_user_role_valid
+            constraintBody: role IN ('ADMIN', 'USER')
