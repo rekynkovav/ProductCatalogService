@@ -50,11 +50,6 @@
 
         <dependency>
             <groupId>com.productCatalogService</groupId>
-            <artifactId>audit-logging-annotation</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.productCatalogService</groupId>
             <artifactId>swagger-springdoc-starter</artifactId>
         </dependency>
 

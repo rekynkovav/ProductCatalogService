@@ -30,7 +30,6 @@
     </properties>
 
     <modules>
-        <module>audit-logging-annotation</module>
         <module>audit-logging-autoconfig</module>
         <module>product-catalog-app</module>
         <module>swagger-springdoc-starter</module>
@@ -53,12 +52,6 @@
             <dependency>
                 <groupId>com.productCatalogService</groupId>
                 <artifactId>audit-logging-autoconfig</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.productCatalogService</groupId>
-                <artifactId>audit-logging-annotation</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
