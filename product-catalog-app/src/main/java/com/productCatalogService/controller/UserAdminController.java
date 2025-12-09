@@ -12,7 +12,7 @@ import java.util.List;
  * Контроллер для административного управления пользователями.
  */
 @RestController
-@RequestMapping("/api/admin/users")
+@RequestMapping("/admin/users")
 @RequiredArgsConstructor
 public class UserAdminController {
 

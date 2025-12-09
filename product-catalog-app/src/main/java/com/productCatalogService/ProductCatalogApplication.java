@@ -28,11 +28,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 @EnableSwagger
 public class ProductCatalogApplication {
 
-    /**
-     * Точка входа в приложение.
-     *
-     * @param args аргументы командной строки
-     */
     public static void main(String[] args) {
         SpringApplication.run(ProductCatalogApplication.class, args);
     }

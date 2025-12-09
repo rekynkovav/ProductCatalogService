@@ -11,7 +11,7 @@ import java.util.Map;
  * Контроллер для получения статистики.
  */
 @RestController
-@RequestMapping("/api/admin/statistics")
+@RequestMapping("/admin/statistics")
 @RequiredArgsConstructor
 public class StatisticsController {
 

@@ -5,14 +5,14 @@ services:
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-productcatalog}
       POSTGRES_USER: ${POSTGRES_USER:-productcatalog}
-      POSTGRES_DB: ${POSTGRES_DB:-product_catalog_db}
+      POSTGRES_DB: ${POSTGRES_DB:-productcatalog}
       POSTGRES_INITDB_ARGS: "--encoding=UTF8"
       POSTGRES_HOST_AUTH_METHOD: scram-sha-256
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ./init.sql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U productcatalog"]
@@ -35,7 +35,7 @@ services:
     container_name: productcatalog-app
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-product_catalog_db}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-productcatalog}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-productcatalog}
       SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:-productcatalog}
       SPRING_JPA_HIBERNATE_DDL_AUTO: update

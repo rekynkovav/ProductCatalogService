@@ -14,7 +14,7 @@ import java.util.List;
  * Доступен всем пользователям без авторизации.
  */
 @RestController
-@RequestMapping("/api/categories")
+@RequestMapping("/categories")
 @RequiredArgsConstructor
 public class CategoryController {
 

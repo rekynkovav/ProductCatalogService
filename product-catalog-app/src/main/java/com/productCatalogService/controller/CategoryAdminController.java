@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
  * Контроллер для административного управления категориями.
  */
 @RestController
-@RequestMapping("/api/admin/categories")
+@RequestMapping("/admin/categories")
 @RequiredArgsConstructor
 public class CategoryAdminController {
 

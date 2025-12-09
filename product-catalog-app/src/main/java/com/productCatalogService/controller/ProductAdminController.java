@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
  * Контроллер для административного управления товарами.
  */
 @RestController
-@RequestMapping("/api/admin/products")
+@RequestMapping("/admin/products")
 @RequiredArgsConstructor
 public class ProductAdminController {
 
