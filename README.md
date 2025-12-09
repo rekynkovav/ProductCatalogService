@@ -1,71 +1,42 @@
+сделатьMaven-package, закинуть папку ProductCatalogService-1.0-SNAPSHOT из target в папку Tomcat/webapps, 
+запустить Tomcat bin/startup.bat, в браузере endpoint в контроллере:
+из публичных будут доступны только GET запросы
+GET http://localhost:8080/ProductCatalogService-1.0-SNAPSHOT/api/categories - Получение всех категорий
+GET http://localhost:8080/ProductCatalogService-1.0-SNAPSHOT/api/products - Получение всех товаров с пагинацией
 
-http://localhost:8080/api/products – получение товаров с пагинацией
+🔐 Аутентификация (Authentication)
+POST http://localhost:8080/ProductCatalogService-1.0-SNAPSHOT/api/auth/register - Регистрация нового пользователя
+POST http://localhost:8080/ProductCatalogService-1.0-SNAPSHOT/api/auth/login - Вход в систему
+POST http://localhost:8080/ProductCatalogService-1.0-SNAPSHOT/api/auth/logout - Выход из системы (требует Authorization header)
+GET http://localhost:8080/ProductCatalogService-1.0-SNAPSHOT/api/auth/users/exists/{username} - Проверка существования пользователя
 
+👤 Пользователь (User)
+GET http://localhost:8080/ProductCatalogService-1.0-SNAPSHOT/api/user/profile - Получение профиля текущего пользователя (требует Authorization header)
+GET http://localhost:8080/ProductCatalogService-1.0-SNAPSHOT/api/user/basket - Получение корзины пользователя (требует Authorization header)
+POST http://localhost:8080/ProductCatalogService-1.0-SNAPSHOT/api/user/basket/add/{productId} - Добавление товара в корзину (требует Authorization header)
+DELETE http://localhost:8080/ProductCatalogService-1.0-SNAPSHOT/api/user/basket/remove/{productId} - Удаление товара из корзины (требует Authorization header)
+DELETE http://localhost:8080/ProductCatalogService-1.0-SNAPSHOT/api/user/basket/clear - Очистка корзины пользователя (требует Authorization header)
 
-AuthController (/auth)
+📁 Категории (Categories) - Публичные
+GET http://localhost:8080/ProductCatalogService-1.0-SNAPSHOT/api/categories - Получение всех категорий
+GET http://localhost:8080/ProductCatalogService-1.0-SNAPSHOT/api/categories/{id} - Получение категории по ID
+GET http://localhost:8080/ProductCatalogService-1.0-SNAPSHOT/api/categories/{id}/products - Получение товаров по категории
 
-    POST /auth/register – регистрация пользователя
+🛒 Товары (Products) - Публичные
+GET http://localhost:8080/ProductCatalogService-1.0-SNAPSHOT/api/products - Получение всех товаров с пагинацией
+GET http://localhost:8080/ProductCatalogService-1.0-SNAPSHOT/api/products/{id} - Получение товара по ID
+GET http://localhost:8080/ProductCatalogService-1.0-SNAPSHOT/api/products/category/{categoryId} - Получение товаров по категории (альтернативный путь)
 
-    POST /auth/login – вход пользователя
+👑 Администратор - Категории (Admin Categories)
+POST http://localhost:8080/ProductCatalogService-1.0-SNAPSHOT/api/admin/categories - Создание новой категории (только ADMIN)
+PUT http://localhost:8080/ProductCatalogService-1.0-SNAPSHOT/api/admin/categories/{id} - Обновление категории (только ADMIN)
+DELETE http://localhost:8080/ProductCatalogService-1.0-SNAPSHOT/api/admin/categories/{id} - Удаление категории (только ADMIN)
 
-    POST /auth/logout – выход пользователя
+👑 Администратор - Товары (Admin Products)
+POST http://localhost:8080/ProductCatalogService-1.0-SNAPSHOT/api/admin/products - Создание нового товара (только ADMIN)
+PUT http://localhost:8080/ProductCatalogService-1.0-SNAPSHOT/api/admin/products/{id} - Обновление товара (только ADMIN)
+DELETE http://localhost:8080/ProductCatalogService-1.0-SNAPSHOT/api/admin/products/{id} - Удаление товара (только ADMIN)
 
-    GET /auth/users/exists/{username} – проверка существования пользователя
-
-ProductController (/products)
-
-  
-
-    GET /products/{id} – получение товара по ID
-
-    GET /products/category/{categoryId} – получение товаров по категории
-
-CategoryController (/categories)
-
-    GET /categories – получение всех категорий
-
-    GET /categories/{id} – получение категории по ID
-
-UserController (/user)
-
-    GET /user/profile – получение профиля текущего пользователя
-
-    GET /user/basket – получение корзины пользователя
-
-    GET /user/basket/summary – получение сводной информации о корзине
-
-    GET /user/basket/validate – валидация корзины
-
-    POST /user/basket/add/{productId} – добавление товара в корзину
-
-    PUT /user/basket/update/{productId} – обновление количества товара в корзине
-
-    DELETE /user/basket/remove/{productId} – удаление товара из корзины
-
-    DELETE /user/basket/clear – очистка всей корзины
-
-ProductAdminController (/admin/products)
-
-    POST /admin/products – создание товара (админ)
-
-    PUT /admin/products/{id} – обновление товара (админ)
-
-    DELETE /admin/products/{id} – удаление товара (админ)
-
-CategoryAdminController (/admin/categories)
-
-    POST /admin/categories – создание категории (админ)
-
-    PUT /admin/categories/{id} – обновление категории (админ)
-
-    DELETE /admin/categories/{id} – удаление категории (админ)
-
-UserAdminController (/admin/users)
-
-    GET /admin/users – получение всех пользователей (админ)
-
-StatisticsController (/admin/statistics)
-
-    GET /admin/statistics – получение статистики (админ)
-
-Всего: 25 endpoint'ов
+👑 Администратор - Пользователи и статистика
+GET http://localhost:8080/ProductCatalogService-1.0-SNAPSHOT/api/admin/users - Получение всех пользователей (только ADMIN)
+GET http://localhost:8080/ProductCatalogService-1.0-SNAPSHOT/api/admin/statistics - Получение статистики (только ADMIN)
