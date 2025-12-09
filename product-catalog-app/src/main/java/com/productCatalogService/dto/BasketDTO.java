@@ -2,6 +2,7 @@ package com.productCatalogService.dto;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 import lombok.Data;
 
 import java.util.Map;
@@ -84,6 +85,7 @@ public class BasketDTO {
     }
 
     @Data
+    @Builder
     public static class UpdateBasketItemRequest {
         @NotNull(message = "Количество обязательно")
         @Min(value = 0, message = "Количество не может быть отрицательным")

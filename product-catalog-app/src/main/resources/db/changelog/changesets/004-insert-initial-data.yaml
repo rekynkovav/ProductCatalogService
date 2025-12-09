@@ -1,4 +1,3 @@
-# changesets/004-insert-initial-data.yaml
 databaseChangeLog:
   - changeSet:
       id: insert-initial-categories
@@ -11,6 +10,9 @@ databaseChangeLog:
               - column:
                   name: name
                   value: Электроника
+              - column:
+                  name: description
+                  value: Техника и электронные устройства
         - insert:
             tableName: categories
             schemaName: app_schema
@@ -18,6 +20,9 @@ databaseChangeLog:
               - column:
                   name: name
                   value: Одежда
+              - column:
+                  name: description
+                  value: Одежда и аксессуары
         - insert:
             tableName: categories
             schemaName: app_schema
@@ -25,12 +30,18 @@ databaseChangeLog:
               - column:
                   name: name
                   value: Книги
+              - column:
+                  name: description
+                  value: Книги и литература
         - insert:
             tableName: categories
             schemaName: app_schema
             columns:
               - column:
                   name: name
+                  value: Продукты питания
+              - column:
+                  name: description
                   value: Продукты питания
 
   - changeSet:
@@ -39,24 +50,51 @@ databaseChangeLog:
       changes:
         - sql:
             sql: |
-              INSERT INTO app_schema.products (name, quantity, price, category_id)
-              VALUES 
-                ('Смартфон Samsung Galaxy', 50, 29999, 
-                 (SELECT id FROM app_schema.categories WHERE name = 'Электроника')),
-                ('Ноутбук Lenovo ThinkPad', 30, 89999, 
-                 (SELECT id FROM app_schema.categories WHERE name = 'Электроника')),
-                ('Футболка мужская', 100, 1999, 
-                 (SELECT id FROM app_schema.categories WHERE name = 'Одежда')),
-                ('Джинсы женские', 75, 3499, 
-                 (SELECT id FROM app_schema.categories WHERE name = 'Одежда')),
-                ('Война и мир (Л.Н. Толстой)', 40, 599, 
-                 (SELECT id FROM app_schema.categories WHERE name = 'Книги')),
-                ('Мастер и Маргарита (М.А. Булгаков)', 35, 499, 
-                 (SELECT id FROM app_schema.categories WHERE name = 'Книги')),
-                ('Хлеб ржаной', 200, 89, 
-                 (SELECT id FROM app_schema.categories WHERE name = 'Продукты питания')),
-                ('Молоко 3,2%', 150, 99, 
-                 (SELECT id FROM app_schema.categories WHERE name = 'Продукты питания'));
+              INSERT INTO app_schema.products (name, description, quantity, price, category_id) 
+              SELECT 'Смартфон Samsung Galaxy', 'Современный смартфон', 50, 29999.00, id
+              FROM app_schema.categories WHERE name = 'Электроника';
+            endDelimiter: ;
+        - sql:
+            sql: |
+              INSERT INTO app_schema.products (name, description, quantity, price, category_id) 
+              SELECT 'Ноутбук Lenovo ThinkPad', 'Надежный бизнес-ноутбук', 30, 89999.00, id
+              FROM app_schema.categories WHERE name = 'Электроника';
+            endDelimiter: ;
+        - sql:
+            sql: |
+              INSERT INTO app_schema.products (name, description, quantity, price, category_id) 
+              SELECT 'Футболка мужская', 'Хлопковая футболка', 100, 1999.00, id
+              FROM app_schema.categories WHERE name = 'Одежда';
+            endDelimiter: ;
+        - sql:
+            sql: |
+              INSERT INTO app_schema.products (name, description, quantity, price, category_id) 
+              SELECT 'Джинсы женские', 'Современные джинсы', 75, 3499.00, id
+              FROM app_schema.categories WHERE name = 'Одежда';
+            endDelimiter: ;
+        - sql:
+            sql: |
+              INSERT INTO app_schema.products (name, description, quantity, price, category_id) 
+              SELECT 'Война и мир (Л.Н. Толстой)', 'Классическая литература', 40, 599.00, id
+              FROM app_schema.categories WHERE name = 'Книги';
+            endDelimiter: ;
+        - sql:
+            sql: |
+              INSERT INTO app_schema.products (name, description, quantity, price, category_id) 
+              SELECT 'Мастер и Маргарита (М.А. Булгаков)', 'Культовый роман', 35, 499.00, id
+              FROM app_schema.categories WHERE name = 'Книги';
+            endDelimiter: ;
+        - sql:
+            sql: |
+              INSERT INTO app_schema.products (name, description, quantity, price, category_id) 
+              SELECT 'Хлеб ржаной', 'Свежий ржаной хлеб', 200, 89.00, id
+              FROM app_schema.categories WHERE name = 'Продукты питания';
+            endDelimiter: ;
+        - sql:
+            sql: |
+              INSERT INTO app_schema.products (name, description, quantity, price, category_id) 
+              SELECT 'Молоко 3,2%', 'Свежее молоко', 150, 99.00, id
+              FROM app_schema.categories WHERE name = 'Продукты питания';
             endDelimiter: ;
 
   - changeSet:
@@ -67,29 +105,25 @@ databaseChangeLog:
             tableName: users
             schemaName: app_schema
             columns:
-              name: username
-              value: admin
-            columns:
-              name: password
-              value: $2a$12$ABC123def456ghi789jkl0
-            columns:
-              name: role
-              value: ADMIN
-            columns:
-              name: basket
-              value: '{}'
+              - column:
+                  name: username
+                  value: admin
+              - column:
+                  name: password
+                  value: $2a$12$ABC123def456ghi789jkl0
+              - column:
+                  name: role
+                  value: ADMIN
         - insert:
             tableName: users
             schemaName: app_schema
             columns:
-              name: username
-              value: user1
-            columns:
-              name: password
-              value: $2a$12$xyz789abc456def123ghi0
-            columns:
-              name: role
-              value: USER
-            columns:
-              name: basket
-              value: '{}'
+              - column:
+                  name: username
+                  value: user1
+              - column:
+                  name: password
+                  value: $2a$12$xyz789abc456def123ghi0
+              - column:
+                  name: role
+                  value: USER

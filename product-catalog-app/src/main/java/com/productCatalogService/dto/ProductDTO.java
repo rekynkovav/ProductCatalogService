@@ -3,6 +3,7 @@ package com.productCatalogService.dto;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.Builder;
 import lombok.Data;
 
 /**
@@ -15,6 +16,7 @@ import lombok.Data;
  * @see ProductDTO.UpdateProduct
  */
 @Data
+@Builder
 public class ProductDTO {
 
     /**
@@ -51,6 +53,7 @@ public class ProductDTO {
      * Не содержит поля id, так как оно генерируется автоматически.
      */
     @Data
+    @Builder
     public static class CreateProduct {
 
         /**
@@ -83,6 +86,7 @@ public class ProductDTO {
      * Не содержит поля id, так как оно передается в URL.
      */
     @Data
+    @Builder
     public static class UpdateProduct {
 
         /**

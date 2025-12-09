@@ -2,12 +2,14 @@ package com.productCatalogService.service.impl;
 
 import com.productCatalogService.dto.ProductDTO;
 import com.productCatalogService.dto.ProductPageDTO;
+import com.productCatalogService.entity.Category;
 import com.productCatalogService.entity.Product;
 import com.productCatalogService.entity.Role;
 import com.productCatalogService.entity.User;
 import com.productCatalogService.exception.AccessDeniedException;
 import com.productCatalogService.exception.ResourceNotFoundException;
 import com.productCatalogService.mapper.ProductMapper;
+import com.productCatalogService.repository.CategoryRepository;
 import com.productCatalogService.repository.ProductRepository;
 import com.productCatalogService.service.ProductService;
 import com.productCatalogService.util.AuthUtil;
@@ -18,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -28,6 +31,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
     private final AuthUtil authUtil;
+    private final CategoryRepository categoryRepository;
 
     @Override
     public List<Product> findAll() {
@@ -52,6 +56,11 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public boolean existsById(Long id) {
         return productRepository.existsById(id);
+    }
+
+    @Override
+    public List<Product> findByCategoryId(Long categoryId) {
+        return productRepository.findByCategoryId(categoryId);
     }
 
     @Override
@@ -103,6 +112,17 @@ public class ProductServiceImpl implements ProductService {
         Product product = findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Товар", "id", id));
         return productMapper.toDTO(product);
+    }
+
+    @Override
+    public List<ProductDTO> getProductsByCategoryId(Long categoryId) {
+        if (!categoryRepository.existsById(categoryId)) {
+            throw new RuntimeException("Category not found with id: " + categoryId);
+        }
+
+        List<Product> products = productRepository.findByCategoryId(categoryId);
+
+        return productMapper.toDTOList(products);
     }
 
     @Override

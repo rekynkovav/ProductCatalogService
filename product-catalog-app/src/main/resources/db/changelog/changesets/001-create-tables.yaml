@@ -1,4 +1,3 @@
-# changesets/001-create-tables.yaml
 databaseChangeLog:
   - changeSet:
       id: create-app-schema
@@ -9,7 +8,7 @@ databaseChangeLog:
             endDelimiter: ;
 
   - changeSet:
-      id: create-categories-table
+      id: create-tables
       author: dev
       changes:
         - createTable:
@@ -24,15 +23,13 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: name
-                  type: VARCHAR(255)
+                  type: VARCHAR(100)
                   constraints:
                     nullable: false
-                    unique: true
+              - column:
+                  name: description
+                  type: TEXT
 
-  - changeSet:
-      id: create-products-table
-      author: dev
-      changes:
         - createTable:
             tableName: products
             schemaName: app_schema
@@ -49,14 +46,15 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
+                  name: description
+                  type: TEXT
+              - column:
                   name: quantity
                   type: INTEGER
-                  defaultValue: 0
-                  constraints:
-                    nullable: false
+                  defaultValueNumeric: 0
               - column:
                   name: price
-                  type: INTEGER
+                  type: DECIMAL(10, 2)
                   constraints:
                     nullable: false
               - column:
@@ -64,13 +62,28 @@ databaseChangeLog:
                   type: BIGINT
                   constraints:
                     nullable: false
-                    foreignKeyName: fk_product_category
-                    references: app_schema.categories(id)
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
 
-  - changeSet:
-      id: create-users-table
-      author: dev
-      changes:
+        - addForeignKeyConstraint:
+            baseTableName: products
+            baseTableSchemaName: app_schema
+            baseColumnNames: category_id
+            referencedTableName: categories
+            referencedTableSchemaName: app_schema
+            referencedColumnNames: id
+            constraintName: fk_products_category
+
+        - sql:
+            sql: ALTER TABLE app_schema.products ADD CONSTRAINT chk_price_positive CHECK (price >= 0);
+            endDelimiter: ;
+
         - createTable:
             tableName: users
             schemaName: app_schema
@@ -86,7 +99,6 @@ databaseChangeLog:
                   type: VARCHAR(50)
                   constraints:
                     nullable: false
-                    unique: true
               - column:
                   name: password
                   type: VARCHAR(255)
@@ -95,31 +107,12 @@ databaseChangeLog:
               - column:
                   name: role
                   type: VARCHAR(20)
-                  constraints:
-                    nullable: false
+                  defaultValue: 'USER'
               - column:
                   name: basket
                   type: JSONB
-
-  - changeSet:
-      id: add-check-constraints
-      author: dev
-      changes:
-        - addCheckConstraint:
-            tableName: products
-            schemaName: app_schema
-            columnName: quantity
-            constraintName: ck_product_quantity_non_negative
-            constraintBody: quantity >= 0
-        - addCheckConstraint:
-            tableName: products
-            schemaName: app_schema
-            columnName: price
-            constraintName: ck_product_price_non_negative
-            constraintBody: price >= 0
-        - addCheckConstraint:
-            tableName: users
-            schemaName: app_schema
-            columnName: role
-            constraintName: ck_user_role_valid
-            constraintBody: role IN ('ADMIN', 'USER')
+                  defaultValue: '{}'
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP

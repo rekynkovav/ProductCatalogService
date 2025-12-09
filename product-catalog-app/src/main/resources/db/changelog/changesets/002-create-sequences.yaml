@@ -1,7 +1,6 @@
-# changesets/002-create-sequences.yaml
 databaseChangeLog:
   - changeSet:
-      id: create-sequence-schema
+      id: create-seq-schema
       author: dev
       changes:
         - sql:
@@ -9,7 +8,7 @@ databaseChangeLog:
             endDelimiter: ;
 
   - changeSet:
-      id: create-categories-sequence
+      id: create-sequences
       author: dev
       changes:
         - createSequence:
@@ -18,20 +17,12 @@ databaseChangeLog:
             startValue: 1
             incrementBy: 1
 
-  - changeSet:
-      id: create-products-sequence
-      author: dev
-      changes:
         - createSequence:
             sequenceName: products_id_seq
             schemaName: seq_schema
             startValue: 1
             incrementBy: 1
 
-  - changeSet:
-      id: create-users-sequence
-      author: dev
-      changes:
         - createSequence:
             sequenceName: users_id_seq
             schemaName: seq_schema
@@ -39,17 +30,21 @@ databaseChangeLog:
             incrementBy: 1
 
   - changeSet:
-      id: set-default-values-from-sequences
+      id: set-sequences-as-default
       author: dev
       changes:
         - sql:
             sql: |
               ALTER TABLE app_schema.categories 
               ALTER COLUMN id SET DEFAULT nextval('seq_schema.categories_id_seq');
-              
+            endDelimiter: ;
+        - sql:
+            sql: |
               ALTER TABLE app_schema.products 
               ALTER COLUMN id SET DEFAULT nextval('seq_schema.products_id_seq');
-              
+            endDelimiter: ;
+        - sql:
+            sql: |
               ALTER TABLE app_schema.users 
               ALTER COLUMN id SET DEFAULT nextval('seq_schema.users_id_seq');
             endDelimiter: ;

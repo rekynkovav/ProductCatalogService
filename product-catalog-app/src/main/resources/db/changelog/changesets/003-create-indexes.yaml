@@ -1,4 +1,3 @@
-# changesets/003-create-indexes.yaml
 databaseChangeLog:
   - changeSet:
       id: create-product-indexes

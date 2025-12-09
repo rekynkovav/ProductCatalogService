@@ -1,6 +1,7 @@
 package com.productCatalogService.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import lombok.Builder;
 import lombok.Data;
 
 /**
@@ -13,6 +14,7 @@ import lombok.Data;
  * @see CategoryDTO.UpdateCategory
  */
 @Data
+@Builder
 public class CategoryDTO {
 
     /** Уникальный идентификатор категории. Автоматически генерируется БД. */
@@ -27,6 +29,7 @@ public class CategoryDTO {
      * Не содержит поля id, так как оно генерируется автоматически.
      */
     @Data
+    @Builder
     public static class CreateCategory {
 
         /** Название категории. Обязательное поле. */
@@ -39,6 +42,7 @@ public class CategoryDTO {
      * Не содержит поля id, так как оно передается в URL.
      */
     @Data
+    @Builder
     public static class UpdateCategory {
 
         /** Название категории. Обязательное поле. */

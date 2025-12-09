@@ -1,20 +1,16 @@
 databaseChangeLog:
   - include:
-      file: db/changelog/service-schema/001-create-service-tables.yaml
+      file: changesets/001-create-tables.yaml
       relativeToChangelogFile: true
 
   - include:
-      file: db/changelog/changesets/001-create-tables.yaml
+      file: changesets/002-create-sequences.yaml
       relativeToChangelogFile: true
 
   - include:
-      file: db/changelog/changesets/002-create-sequences.yaml
+      file: changesets/003-create-indexes.yaml
       relativeToChangelogFile: true
 
   - include:
-      file: db/changelog/changesets/003-create-indexes.yaml
-      relativeToChangelogFile: true
-
-  - include:
-      file: db/changelog/changesets/004-insert-initial-data.yaml
+      file: changesets/004-insert-initial-data.yaml
       relativeToChangelogFile: true

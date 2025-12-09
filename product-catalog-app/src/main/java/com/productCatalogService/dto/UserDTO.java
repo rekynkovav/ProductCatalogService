@@ -4,6 +4,7 @@ import com.productCatalogService.entity.Role;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -20,6 +21,7 @@ import lombok.NoArgsConstructor;
  * @see UserDTO.UserInfo
  */
 @Data
+@Builder
 public class UserDTO {
 
     /** Уникальный идентификатор пользователя. Автоматически генерируется БД. */
@@ -43,6 +45,7 @@ public class UserDTO {
      * Содержит все необходимые данные для создания учетной записи.
      */
     @Data
+    @Builder
     @NoArgsConstructor
     @AllArgsConstructor
     public static class RegisterRequest {
@@ -66,6 +69,7 @@ public class UserDTO {
      * Содержит учетные данные для входа в систему.
      */
     @Data
+    @Builder
     @NoArgsConstructor
     @AllArgsConstructor
     public static class LoginRequest {
@@ -84,6 +88,7 @@ public class UserDTO {
      * Содержит сообщение, JWT токен и информацию о пользователе.
      */
     @Data
+    @Builder
     @NoArgsConstructor
     @AllArgsConstructor
     public static class AuthResponse {
@@ -103,6 +108,7 @@ public class UserDTO {
      * Используется при редактировании профиля пользователя.
      */
     @Data
+    @Builder
     @NoArgsConstructor
     @AllArgsConstructor
     public static class UpdateUserRequest {
@@ -127,6 +133,7 @@ public class UserDTO {
      * Используется когда нужно показать информацию о пользователе другим пользователям.
      */
     @Data
+    @Builder
     @NoArgsConstructor
     @AllArgsConstructor
     public static class PublicUserInfo {
@@ -142,6 +149,7 @@ public class UserDTO {
     }
 
     @Data
+    @Builder
     @AllArgsConstructor
     public static class UserInfo {
 
