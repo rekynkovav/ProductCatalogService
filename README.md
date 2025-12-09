@@ -1,3 +1,6 @@
+запускать через обычный main? или docker-compose 
+доступные ендпоинты:
+
 http://localhost:8080/api/v3/api-docs
 http://localhost:8080/api/v3/api-docs.yaml
 http://localhost:8080/api/v3/api-docs.json
